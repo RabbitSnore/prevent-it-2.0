@@ -45,61 +45,109 @@ lapply(packages, library, character.only = TRUE)
 
 #### Hours
 
-lmm_csam_hours_linear  <- lmer(schimra_b_csam_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_csam_hours_quad    <- lmer(schimra_b_csam_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_csam_hours         <- anova(lmm_csam_hours_linear, lmm_csam_hours_quad, test = "LRT")
+lmm_csam_hours_linear      <- lmer(schimra_b_csam_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_csam_hours_quad        <- lmer(schimra_b_csam_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_csam_hours             <- anova(lmm_csam_hours_linear, lmm_csam_hours_quad, test = "LRT")
 
 #### COPINE severity
 
-lmm_csam_copine_linear <- lmer(schimra_b_csam_copine_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_csam_copine_quad   <- lmer(schimra_b_csam_copine_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_csam_copine        <- anova(lmm_csam_copine_linear, lmm_csam_copine_quad, test = "LRT")
+lmm_csam_copine_linear     <- lmer(schimra_b_csam_copine_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_csam_copine_quad       <- lmer(schimra_b_csam_copine_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_csam_copine            <- anova(lmm_csam_copine_linear, lmm_csam_copine_quad, test = "LRT")
 
 #### Youngest age
 
-lmm_csam_age_linear    <- lmer(schimra_b_csam_age_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_csam_age_quad      <- lmer(schimra_b_csam_age_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_csam_age           <- anova(lmm_csam_age_linear, lmm_csam_age_quad, test = "LRT")
+lmm_csam_age_linear        <- lmer(schimra_b_csam_age_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_csam_age_quad          <- lmer(schimra_b_csam_age_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_csam_age               <- anova(lmm_csam_age_linear, lmm_csam_age_quad, test = "LRT")
 
 ### Socialization
 
-schimra_b_social_hours_avg
+#### Hours
 
-schimra_b_social_age_avg
+lmm_social_hours_linear    <- lmer(schimra_b_social_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_social_hours_quad      <- lmer(schimra_b_social_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_social_hours           <- anova(lmm_social_hours_linear, lmm_social_hours_quad, test = "LRT")
+
+#### Youngest age
+
+lmm_social_age_linear      <- lmer(schimra_b_social_age_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_social_age_quad        <- lmer(schimra_b_social_age_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_social_age             <- anova(lmm_social_age_linear, lmm_social_age_quad, test = "LRT")
 
 ### Sexual interactions
 
-schimra_b_interact_hours_avg
+#### Hours
 
-schimra_b_interact_age_avg
+lmm_interact_hours_linear  <- lmer(schimra_b_interact_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_interact_hours_quad    <- lmer(schimra_b_interact_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_interact_hours         <- anova(lmm_interact_hours_linear, lmm_interact_hours_quad, test = "LRT")
+
+#### Youngest age
+
+lmm_interact_age_linear    <- lmer(schimra_b_interact_age_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_interact_age_quad      <- lmer(schimra_b_interact_age_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_interact_age           <- anova(lmm_interact_age_linear, lmm_interact_age_quad, test = "LRT")
 
 ### Other behaviors
 
-schimra_b_other_hours_avg
+#### Hours
 
-schimra_b_other_age_avg
+lmm_other_hours_linear     <- lmer(schimra_b_other_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_other_hours_quad       <- lmer(schimra_b_other_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_other_hours            <- anova(lmm_other_hours_linear, lmm_other_hours_quad, test = "LRT")
+
+#### Youngest age
+
+lmm_other_age_linear       <- lmer(schimra_b_other_age_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_other_age_quad         <- lmer(schimra_b_other_age_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_other_age              <- anova(lmm_other_age_linear, lmm_other_age_quad, test = "LRT")
 
 ## Secondary research questions ------------------------------------------------
 
-### Is there a change in motivation to commit future abuse/exploitation? (SChiMRA+ part B)
+### Is there a change in motivation to commit future abuse/exploitation? (SChiMRA+ part A)
 
+#### Watch
 
+lmm_watch_motive_linear    <- lmer(schimra_a_watch ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_watch_motive_quad      <- lmer(schimra_a_watch ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_watch_motive           <- anova(lmm_csam_hours_linear, lmm_csam_hours_quad, test = "LRT")
 
-### How does Prevent It 2.0 compare to the first version of Prevent It? (SChiMRA+ part B)                                                          
+#### Socialize
+
+lmm_social_motive_linear   <- lmer(schimra_a_social ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_social_motive_quad     <- lmer(schimra_a_social ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_social_motive          <- anova(lmm_social_motive_linear, lmm_social_motive_quad, test = "LRT")
+
+#### Interact
+
+lmm_interact_motive_linear <- lmer(schimra_a_interact ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_interact_motive_quad   <- lmer(schimra_a_interact ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lrt_interact_motive        <- anova(lmm_interact_motive_linear, lmm_interact_motive_quad, test = "LRT")
+
+### How does Prevent It 2.0 compare to the first version of Prevent It? (SChiMRA+ part A)                                                          
 
 
 
 ### Is there a reduction in the negative side effects between Prevent It 1 and 2? (for safety, NEQ-20 total number of side effects; for attrition, % lost to post-treatment))
 
+#### Safety/side effects
 
+# How many measurements of this do we have?
+
+#### Attrition
+
+# Only after treatment?
 
 ### Is there an effect on the participants' quality of life? (EQ5D)
 
-
+# How many measurements?
 
 ### Is there sustainable change (measured by a supplementary study that includes a long term follow up 8 weeks after the normal follow up)?
 
-
+# How to assess this? Test for increase in SChiMRA+ A and B?
 
 ### Specific effects from the treatment (Prevent It 2.0 compared to Prevent It 1 Placebo); Non-specific effects from treatment (PI1 Placebo compared to Waitlist); Waitlist effects (regression to the mean)
+
+# For what variables?
 
