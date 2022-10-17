@@ -141,9 +141,9 @@ lrt_other_age              <- anova(lmm_other_age_linear, lmm_other_age_quad, te
 
 ## Secondary research questions ------------------------------------------------
 
-### Is there a change in motivation to commit future abuse/exploitation? (SChiMRA+ part A)
+### Is there a change in motivation to commit future abuse/exploitation?
 
-# The SChiMRA+ part A contains three Likert-type self-report items concerning
+# The SChiMRA+ Part A contains three Likert-type self-report items concerning
 # motivation to use CSAM, to socialize with children, and to have sexual
 # interactions with children.
 
@@ -165,7 +165,7 @@ lmm_interact_motive_linear <- lmer(schimra_a_interact ~ treatment + time + time_
 lmm_interact_motive_quad   <- lmer(schimra_a_interact ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
 lrt_interact_motive        <- anova(lmm_interact_motive_linear, lmm_interact_motive_quad, test = "LRT")
 
-### Sustainable change (follow-up measure)
+### To what extent does the treatment produce sustainable changes in behavior (follow-up measure)?
 
 # To assess the extent to which the treatment produces a sustainable change in
 # the relevant behaviors (as measured by the SChiMRA+ Part B), for each of the
@@ -181,6 +181,11 @@ lrt_interact_motive        <- anova(lmm_interact_motive_linear, lmm_interact_mot
 # effects and one that adds the interaction term for the treatment and 
 # measurement predictors. These models will be compared using a likelihood ratio
 # test.
+#
+# A significant interaction such that the treatment group's slope from post-
+# treatment to followup is smaller (i.e., less positive or negative) than the 
+# waitlist's slope would provide support for the sustained effectiveness of the
+# treatment.
 
 # Wrangling note: It will probably be easiest to wrangle a unique dataset for
 # each of these sets of models. Baseline measures will need to be in their own
@@ -198,33 +203,57 @@ lrt_csam_hours_followup      <- anova(lmm_csam_hours_followup_main, lmm_csam_hou
 
 lmm_csam_copine_followup_main <- lmer(schimra_b_csam_copine_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_csam_copine_sust)
 lmm_csam_copine_followup_int  <- lmer(schimra_b_csam_copine_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_csam_copine_sust)
-lrt_csam_copine_followup      <- anova(lmm_csam_hours_followup_main, lmm_csam_hours_followup_int, test = "LRT")
+lrt_csam_copine_followup      <- anova(lmm_csam_copine_followup_main, lmm_csam_copine_followup_int, test = "LRT")
 
 ##### Youngest age
+
+lmm_csam_age_followup_main <- lmer(schimra_b_csam_age_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_csam_age_sust)
+lmm_csam_age_followup_int  <- lmer(schimra_b_csam_age_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_csam_age_sust)
+lrt_csam_age_followup      <- anova(lmm_csam_age_followup_main, lmm_csam_age_followup_int, test = "LRT")
 
 #### Socialization
 
 ##### Hours (daily average)
 
+lmm_social_hours_followup_main <- lmer(schimra_b_social_hours_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_social_hours_sust)
+lmm_social_hours_followup_int  <- lmer(schimra_b_social_hours_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_social_hours_sust)
+lrt_social_hours_followup      <- anova(lmm_social_hours_followup_main, lmm_social_hours_followup_int, test = "LRT")
+
 ##### Youngest age
+
+lmm_social_age_followup_main <- lmer(schimra_b_social_age_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_social_age_sust)
+lmm_social_age_followup_int  <- lmer(schimra_b_social_age_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_social_age_sust)
+lrt_social_age_followup      <- anova(lmm_social_age_followup_main, lmm_social_age_followup_int, test = "LRT")
 
 #### Sexual interactions
 
 ##### Hours (daily average)
 
+lmm_interact_hours_followup_main <- lmer(schimra_b_interact_hours_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_interact_hours_sust)
+lmm_interact_hours_followup_int  <- lmer(schimra_b_interact_hours_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_interact_hours_sust)
+lrt_interact_hours_followup      <- anova(lmm_interact_hours_followup_main, lmm_interact_hours_followup_int, test = "LRT")
+
 ##### Youngest age
+
+lmm_interact_age_followup_main <- lmer(schimra_b_interact_age_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_interact_age_sust)
+lmm_interact_age_followup_int  <- lmer(schimra_b_interact_age_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_interact_age_sust)
+lrt_interact_age_followup      <- anova(lmm_interact_age_followup_main, lmm_interact_age_followup_int, test = "LRT")
 
 #### Other behaviors
 
 ##### Hours (daily average)
 
+lmm_other_hours_followup_main <- lmer(schimra_b_other_hours_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_other_hours_sust)
+lmm_other_hours_followup_int  <- lmer(schimra_b_other_hours_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_other_hours_sust)
+lrt_other_hours_followup      <- anova(lmm_other_hours_followup_main, lmm_other_hours_followup_int, test = "LRT")
+
 ##### Youngest age
 
-### How does Prevent It 2.0 compare to the first version of Prevent It? (SChiMRA+ part B)                                                          
+lmm_other_age_followup_main <- lmer(schimra_b_other_age_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_other_age_sust)
+lmm_other_age_followup_int  <- lmer(schimra_b_other_age_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_other_age_sust)
+lrt_other_age_followup      <- anova(lmm_other_age_followup_main, lmm_other_age_followup_int, test = "LRT")
 
-
-
-### Safety/Side-effects
+### How severe are the side-effects of the treatment?
 
 # Negative side effects are measured by the NEQ-20, which is administered to
 # participants post-treatment.
@@ -243,7 +272,7 @@ lrt_csam_copine_followup      <- anova(lmm_csam_hours_followup_main, lmm_csam_ho
 
 neq20_comparison <- t.test(neq20 ~ trial, data = pi1_pi2_neq20_data)
 
-### Attrition
+### Attrition compared to Prevent It 1.0
 
 # We will create a binary indicator for whether a participant has dropped out at
 # each measurement point. The indicator will be coded 0 if the participant
@@ -279,13 +308,17 @@ attrition_rate_chisq <- prop.test(x = c(att_rate_pi2, att_rate_pi1),
 
 # ADD VERBAL DESCRIPTION OF ANALYTIC APPROACH
 
-glmer_attrition_linear   <- glmer(dropout ~ treatment + time + (1|id), data = pi1_pi2_data_long)
-glmer_attrition_inter    <- glmer(dropout ~ treatment * time + (1|id), data = pi1_pi2_data_long)
-glmer_attrition_quad     <- glmer(dropout ~ treatment* time + time_sq + (1|id), data = pi1_pi2_data_long)
-glmer_attrition_inter_sq <- glmer(dropout ~ treatment* time * time_sq + (1|id), data = pi1_pi2_data_long)
+glmer_attrition_linear   <- glmer(dropout ~ treatment + time + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
+glmer_attrition_inter    <- glmer(dropout ~ treatment * time + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
+glmer_attrition_quad     <- glmer(dropout ~ treatment* time + time_sq + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
+glmer_attrition_inter_sq <- glmer(dropout ~ treatment* time * time_sq + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
 lrt_attrition            <- anova(glmer_attrition_linear, glmer_attrition_inter, glmer_attrition_quad, glmer_attrition_inter_sq, test = "LRT")
 
-### Is there an effect on the participants' quality of life?
+### To what extent does the treatment affect the participants' quality of life?
 
 # Quality of life will be assessed by the EQ-5D, which is administered to
 # participants prior to treatment, after treatment, and at the follow-up.
+
+### How does Prevent It 2.0 compare to the first version of Prevent It? (SChiMRA+ part B)                    
+
+# ADD ANALYTIC STRATEGY
