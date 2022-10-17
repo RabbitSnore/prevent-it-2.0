@@ -192,13 +192,13 @@ lrt_interact_motive        <- anova(lmm_interact_motive_linear, lmm_interact_mot
 
 lmm_csam_hours_followup_main <- lmer(schimra_b_csam_hours_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_csam_hours_sust)
 lmm_csam_hours_followup_int  <- lmer(schimra_b_csam_hours_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_csam_hours_sust)
-lmm_csam_hours_followup_lrt  <- anova(lmm_csam_hours_followup_main, lmm_csam_hours_followup_int, test = "LRT")
+lrt_csam_hours_followup      <- anova(lmm_csam_hours_followup_main, lmm_csam_hours_followup_int, test = "LRT")
 
 ##### COPINE severity
 
 lmm_csam_copine_followup_main <- lmer(schimra_b_csam_copine_sust ~ treatment + measurement + baseline + (1|id), data = pi_data_csam_copine_sust)
 lmm_csam_copine_followup_int  <- lmer(schimra_b_csam_copine_sust ~ treatment * measurement + baseline + (1|id), data = pi_data_csam_copine_sust)
-lmm_csam_copine_followup_lrt  <- anova(lmm_csam_hours_followup_main, lmm_csam_hours_followup_int, test = "LRT")
+lrt_csam_copine_followup      <- anova(lmm_csam_hours_followup_main, lmm_csam_hours_followup_int, test = "LRT")
 
 ##### Youngest age
 
@@ -277,10 +277,13 @@ attrition_rate_chisq <- prop.test(x = c(att_rate_pi2, att_rate_pi1),
 
 #### Time to dropout
 
+# ADD VERBAL DESCRIPTION OF ANALYTIC APPROACH
+
 glmer_attrition_linear   <- glmer(dropout ~ treatment + time + (1|id), data = pi1_pi2_data_long)
 glmer_attrition_inter    <- glmer(dropout ~ treatment * time + (1|id), data = pi1_pi2_data_long)
 glmer_attrition_quad     <- glmer(dropout ~ treatment* time + time_sq + (1|id), data = pi1_pi2_data_long)
 glmer_attrition_inter_sq <- glmer(dropout ~ treatment* time * time_sq + (1|id), data = pi1_pi2_data_long)
+lrt_attrition            <- anova(glmer_attrition_linear, glmer_attrition_inter, glmer_attrition_quad, glmer_attrition_inter_sq, test = "LRT")
 
 ### Is there an effect on the participants' quality of life?
 
