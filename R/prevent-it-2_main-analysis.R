@@ -183,9 +183,10 @@ lrt_interact_motive        <- anova(lmm_interact_motive_linear, lmm_interact_mot
 # test.
 #
 # A significant interaction such that the treatment group's slope from post-
-# treatment to followup is smaller (i.e., less positive or negative) than the 
-# waitlist's slope would provide support for the sustained effectiveness of the
-# treatment.
+# treatment to followup is smaller (i.e., less positive) than the  waitlist's 
+# slope would provide support for the sustained effectiveness of the treatment.
+# As long as the primary analyses also support the effectiveness of the treatment,
+# a non-significant 
 
 # Wrangling note: It will probably be easiest to wrangle a unique dataset for
 # each of these sets of models. Baseline measures will need to be in their own
@@ -310,14 +311,30 @@ attrition_rate_chisq <- prop.test(x = c(att_rate_pi2, att_rate_pi1),
 
 glmer_attrition_linear   <- glmer(dropout ~ treatment + time + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
 glmer_attrition_inter    <- glmer(dropout ~ treatment * time + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
-glmer_attrition_quad     <- glmer(dropout ~ treatment* time + time_sq + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
-glmer_attrition_inter_sq <- glmer(dropout ~ treatment* time * time_sq + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
+glmer_attrition_quad     <- glmer(dropout ~ treatment * time + time_sq + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
+glmer_attrition_inter_sq <- glmer(dropout ~ treatment * time * time_sq + (1|id), family = binomial(link = "logit"), data = pi1_pi2_data_long)
 lrt_attrition            <- anova(glmer_attrition_linear, glmer_attrition_inter, glmer_attrition_quad, glmer_attrition_inter_sq, test = "LRT")
 
 ### To what extent does the treatment affect the participants' quality of life?
 
 # Quality of life will be assessed by the EQ-5D, which is administered to
 # participants prior to treatment, after treatment, and at the follow-up.
+# Specifically, we will use the visual analogue scale (value range 1 to 100) as
+# a measure of self-reported quality of life.
+
+# ADD NOTES ABOUT ANALYTIC STRATEGY
+
+#### Effect of treatment
+
+lmm_eq5d_main <- lmer(eq5d_vas ~ treatment + measurement + (1|id), data = pi_data_eq5d)
+lmm_eq5d_int  <- lmer(eq5d_vas ~ treatment * measurement + (1|id), data = pi_data_eq5d)
+lrt_eq5d      <- anova(lmm_eq5d_main, lmm_eq5d_int, test = "LRT")
+
+#### Sustained change
+
+lmm_eq5d_followup_main <- lmer(eq5d_vas ~ treatment + measurement + baseline + (1|id), data = pi_data_eq5d_followup)
+lmm_eq5d_followup_int  <- lmer(eq5d_vas ~ treatment * measurement + baseline + (1|id), data = pi_data_eq5d_followup)
+lrt_eq5d_followup      <- anova(lmm_eq5d_followup_main, lmm_eq5d_followup_int, test = "LRT")
 
 ### How does Prevent It 2.0 compare to the first version of Prevent It? (SChiMRA+ part B)                    
 
