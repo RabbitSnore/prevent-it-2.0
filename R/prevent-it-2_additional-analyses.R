@@ -1,6 +1,8 @@
 ################################################################################
 
-# Prevent It 2.0 -- Additional Analyses
+# Prevent It 2.0, Global Perpetration Prevention -- Additional Analyses
+
+# Author: Timothy J Luke
 
 ################################################################################
 

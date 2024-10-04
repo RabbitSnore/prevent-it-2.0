@@ -2,11 +2,15 @@
 
 # Prevent It 2.0 -- Main Analysis
 
+# Author: Timothy J Luke
+
 ################################################################################
 
 # Set up -----------------------------------------------------------------------
 
-packages <- c("lme4", "lmerTest", "ggplot")
+packages <- c("lme4", 
+              "lmerTest", 
+              "ggplot")
 
 lapply(packages, library, character.only = TRUE)
 
@@ -84,9 +88,69 @@ lapply(packages, library, character.only = TRUE)
 # Treatment group and the waitlist group (after treatment). This follow-up 
 # measure point will not be included in the primary analysis.
 
-lmm_sass_linear      <- lmer(sass_total ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_sass_quad        <- lmer(sass_total ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_sass             <- anova(lmm_sass_linear, lmm_sass_quad, test = "LRT")
+lmm_sass_linear      <- lmer(ssas_sum 
+                             ~ 1 
+                             + treatment 
+                             + time 
+                             + time_after 
+                             + (1|id), 
+                             data = gpp_data_main)
+
+lmm_sass_quad        <- lmer(ssas_sum 
+                             ~ 1 
+                             + treatment 
+                             + time 
+                             + time_after 
+                             + time_sq 
+                             + time_after_sq 
+                             + (1|id), 
+                             data = gpp_data_main)
+
+lrt_sass             <- anova(lmm_ssas_linear, 
+                              lmm_ssas_quad, 
+                              test = "LRT")
+
+## Visualization of mean SSAS scores
+
+ssas_time_arm <- gpp_data_main %>% 
+  group_by(assigned_group, time) %>% 
+  summarise(
+    mean_ssas = mean(ssas_sum, na.rm = TRUE),
+    sd_ssas   = sd(ssas_sum, na.rm = TRUE),
+    se_ssas   = sd_ssas/n(),
+    ci_lb     = mean_ssas - se_ssas*qnorm(.975),
+    ci_ub     = mean_ssas + se_ssas*qnorm(.975),
+    n         = n()
+  )
+
+ggplot(ssas_time_arm,
+       aes(
+         x     = time, 
+         y     = mean_ssas,
+         ymax  = ci_ub,
+         ymin  = ci_lb,
+         group = assigned_group,
+         color = assigned_group
+       )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_errorbar(
+    linewidth = 1,
+    width = .33
+  ) +
+  scale_x_continuous(
+    breaks = 0:max(ssas_time_arm$time)
+  ) +
+  scale_y_continuous(
+    breaks = 0:4
+  ) +
+  labs(
+    x = "Time",
+    y = "Mean SSAS Score",
+    color = "Group"
+  ) +
+  theme_classic()
 
 # Sensitivity analyses/Robustness checks
 
@@ -110,16 +174,43 @@ lrt_sass             <- anova(lmm_sass_linear, lmm_sass_quad, test = "LRT")
 # Time points 10, 11, and 12 will be missing by design, so they will treated as
 # missing in the variable indicating (unplanned) missingness.
 
-miss_ssas              <- glmer(sass_missing ~ treatment + time + time_after + ADDITIONAL_PREDICTORS + (1|id), 
-                                   data = pi_data_long, family = binomial(link = "probit"))
+miss_ssas              <- glmer(ssas_missing 
+                                ~ 1 
+                                + treatment 
+                                + time 
+                                + time_after 
+                                + ADDITIONAL_PREDICTORS 
+                                + (1|id), 
+                                data = gpp_data_main, 
+                                family = binomial(link = "probit"))
 
-pi_data_long$inv_mills <- dnorm( predict(miss_ssas) ) / pnorm( predict(miss_ssas) )
+gpp_data_main$inv_mills <- dnorm( predict(miss_ssas) ) / pnorm( predict(miss_ssas) )
 
 ### Outcome model
 
-lmm_sass_sens_linear      <- lmer(sass_total ~ treatment + time + time_after + inv_mills + (1|id), data = pi_data_long)
-lmm_sass_sens_quad        <- lmer(sass_total ~ treatment + time + time_after + time_sq + time_after_sq + inv_mills + (1|id), data = pi_data_long)
-lrt_sass_sens             <- anova(lmm_sass_sens_linear, lmm_sass_sens_quad, test = "LRT")
+lmm_sass_sens_linear      <- lmer(ssas_sum 
+                                  ~ 1 
+                                  + treatment 
+                                  + time 
+                                  + time_after 
+                                  + inv_mills 
+                                  + (1|id), 
+                                  data = gpp_data_main)
+
+lmm_sass_sens_quad        <- lmer(ssas_sum 
+                                  ~ 1 
+                                  + treatment 
+                                  + time 
+                                  + time_after 
+                                  + time_sq 
+                                  + time_after_sq 
+                                  + inv_mills 
+                                  + (1|id), 
+                                  data = gpp_data_main)
+
+lrt_sass_sens             <- anova(lmm_sass_sens_linear, 
+                                   lmm_sass_sens_quad, 
+                                   test = "LRT")
 
 ## Secondary research questions ------------------------------------------------
 
@@ -153,62 +244,261 @@ lrt_sass_sens             <- anova(lmm_sass_sens_linear, lmm_sass_sens_quad, tes
 
 ##### Hours (daily average)
 
-lmm_csam_hours_linear      <- lmer(schimra_b_csam_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_csam_hours_quad        <- lmer(schimra_b_csam_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_csam_hours             <- anova(lmm_csam_hours_linear, lmm_csam_hours_quad, test = "LRT")
+lmm_csam_hours_linear      <- lmer(schimra_b_csam_hours_avg 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_csam_hours_quad        <- lmer(schimra_b_csam_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_csam_hours             <- anova(lmm_csam_hours_linear, 
+                                    lmm_csam_hours_quad, 
+                                    test = "LRT")
+
+###### Visualization of daily average CSAM use
+
+csam_time_arm <- gpp_data_main %>% 
+  group_by(assigned_group, time) %>% 
+  summarise(
+    mean_csam = mean(schimra_b_csam_hours_avg, na.rm = TRUE),
+    sd_csam   = sd(schimra_b_csam_hours_avg, na.rm = TRUE),
+    se_csam   = sd_csam/n(),
+    ci_lb     = mean_csam - se_csam*qnorm(.975),
+    ci_ub     = mean_csam + se_csam*qnorm(.975),
+    n         = n()
+  )
+
+ggplot(csam_time_arm,
+       aes(
+         x     = time, 
+         y     = mean_csam,
+         ymax  = ci_ub,
+         ymin  = ci_lb,
+         group = assigned_group,
+         color = assigned_group
+       )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_errorbar(
+    linewidth = 1,
+    width = .33
+  ) +
+  scale_x_continuous(
+    breaks = 0:max(csam_time_arm$time)
+  ) +
+  labs(
+    x = "Time",
+    y = "Daily Average CSAM Use",
+    color = "Group"
+  ) +
+  theme_classic()
 
 ##### COPINE severity
 
-lmm_csam_copine_linear     <- lmer(schimra_b_csam_copine_max ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_csam_copine_quad       <- lmer(schimra_b_csam_copine_max ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_csam_copine            <- anova(lmm_csam_copine_linear, lmm_csam_copine_quad, test = "LRT")
+lmm_csam_copine_linear     <- lmer(schimra_b_csam_copine_max 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_csam_copine_quad       <- lmer(schimra_b_csam_copine_max
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_csam_copine            <- anova(lmm_csam_copine_linear, 
+                                    lmm_csam_copine_quad, 
+                                    test = "LRT")
 
 ##### Youngest age
 
-lmm_csam_age_linear        <- lmer(schimra_b_csam_age_min ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_csam_age_quad          <- lmer(schimra_b_csam_age_min ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_csam_age               <- anova(lmm_csam_age_linear, lmm_csam_age_quad, test = "LRT")
+lmm_csam_age_linear        <- lmer(schimra_b_csam_age_min 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_csam_age_quad          <- lmer(schimra_b_csam_age_min 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_csam_age               <- anova(lmm_csam_age_linear, 
+                                    lmm_csam_age_quad, 
+                                    test = "LRT")
 
 #### Socialization
 
 ##### Hours (daily average)
 
-lmm_social_hours_linear    <- lmer(schimra_b_social_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_social_hours_quad      <- lmer(schimra_b_social_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_social_hours           <- anova(lmm_social_hours_linear, lmm_social_hours_quad, test = "LRT")
+lmm_social_hours_linear    <- lmer(schimra_b_social_hours_avg 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_social_hours_quad      <- lmer(schimra_b_social_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_social_hours           <- anova(lmm_social_hours_linear, 
+                                    lmm_social_hours_quad, 
+                                    test = "LRT")
 
 ##### Youngest age
 
-lmm_social_age_linear      <- lmer(schimra_b_social_age_min ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_social_age_quad        <- lmer(schimra_b_social_age_min ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_social_age             <- anova(lmm_social_age_linear, lmm_social_age_quad, test = "LRT")
+lmm_social_age_linear      <- lmer(schimra_b_social_age_min 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_social_age_quad        <- lmer(schimra_b_social_age_min 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_social_age             <- anova(lmm_social_age_linear, 
+                                    lmm_social_age_quad, 
+                                    test = "LRT")
 
 #### Sexual interactions
 
 ##### Hours (daily average)
 
-lmm_interact_hours_linear  <- lmer(schimra_b_interact_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_interact_hours_quad    <- lmer(schimra_b_interact_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_interact_hours         <- anova(lmm_interact_hours_linear, lmm_interact_hours_quad, test = "LRT")
+lmm_interact_hours_linear  <- lmer(schimra_b_interact_hours_avg 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_interact_hours_quad    <- lmer(schimra_b_interact_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_interact_hours         <- anova(lmm_interact_hours_linear, 
+                                    lmm_interact_hours_quad, 
+                                    test = "LRT")
 
 ##### Youngest age
 
-lmm_interact_age_linear    <- lmer(schimra_b_interact_age_min ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_interact_age_quad      <- lmer(schimra_b_interact_age_min ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_interact_age           <- anova(lmm_interact_age_linear, lmm_interact_age_quad, test = "LRT")
+lmm_interact_age_linear    <- lmer(schimra_b_interact_age_min 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_interact_age_quad      <- lmer(schimra_b_interact_age_min
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_interact_age           <- anova(lmm_interact_age_linear, 
+                                    lmm_interact_age_quad, 
+                                    test = "LRT")
 
 #### Other behaviors
 
 ##### Hours (daily average)
 
-lmm_other_hours_linear     <- lmer(schimra_b_other_hours_avg ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_other_hours_quad       <- lmer(schimra_b_other_hours_avg ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_other_hours            <- anova(lmm_other_hours_linear, lmm_other_hours_quad, test = "LRT")
+lmm_other_hours_linear     <- lmer(schimra_b_other_hours_avg 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_other_hours_quad       <- lmer(schimra_b_other_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_other_hours            <- anova(lmm_other_hours_linear, 
+                                    lmm_other_hours_quad, 
+                                    test = "LRT")
 
 ##### Youngest age
 
-lmm_other_age_linear       <- lmer(schimra_b_other_age_min ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_other_age_quad         <- lmer(schimra_b_other_age_min ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_other_age              <- anova(lmm_other_age_linear, lmm_other_age_quad, test = "LRT")
+lmm_other_age_linear       <- lmer(schimra_b_other_age_min 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
 
+lmm_other_age_quad         <- lmer(schimra_b_other_age_min 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
 
+lrt_other_age              <- anova(lmm_other_age_linear, 
+                                    lmm_other_age_quad, 
+                                    test = "LRT")
