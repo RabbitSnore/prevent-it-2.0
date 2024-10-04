@@ -10,7 +10,7 @@
 
 packages <- c("lme4", 
               "lmerTest", 
-              "ggplot")
+              "ggplot2")
 
 lapply(packages, library, character.only = TRUE)
 
@@ -88,7 +88,7 @@ lapply(packages, library, character.only = TRUE)
 # Treatment group and the waitlist group (after treatment). This follow-up 
 # measure point will not be included in the primary analysis.
 
-lmm_sass_linear      <- lmer(ssas_sum 
+lmm_ssas_linear      <- lmer(ssas_sum 
                              ~ 1 
                              + treatment 
                              + time 
@@ -96,7 +96,7 @@ lmm_sass_linear      <- lmer(ssas_sum
                              + (1|id), 
                              data = gpp_data_main)
 
-lmm_sass_quad        <- lmer(ssas_sum 
+lmm_ssas_quad        <- lmer(ssas_sum 
                              ~ 1 
                              + treatment 
                              + time 
@@ -242,7 +242,7 @@ lrt_sass_sens             <- anova(lmm_sass_sens_linear,
 
 #### CSAM
 
-##### Hours (daily average)
+##### Hours (daily average) -- Active user subgroup
 
 lmm_csam_hours_linear      <- lmer(schimra_b_csam_hours_avg 
                                    ~ 1
@@ -250,7 +250,7 @@ lmm_csam_hours_linear      <- lmer(schimra_b_csam_hours_avg
                                    + time 
                                    + time_after 
                                    + (1|id), 
-                                   data = gpp_data_main)
+                                   data = gpp_data_active_csam)
 
 lmm_csam_hours_quad        <- lmer(schimra_b_csam_hours_avg 
                                    ~ 1 
@@ -260,7 +260,7 @@ lmm_csam_hours_quad        <- lmer(schimra_b_csam_hours_avg
                                    + time_sq 
                                    + time_after_sq 
                                    + (1|id), 
-                                   data = gpp_data_main)
+                                   data = gpp_data_active_csam)
 
 lrt_csam_hours             <- anova(lmm_csam_hours_linear, 
                                     lmm_csam_hours_quad, 
@@ -268,7 +268,7 @@ lrt_csam_hours             <- anova(lmm_csam_hours_linear,
 
 ###### Visualization of daily average CSAM use
 
-csam_time_arm <- gpp_data_main %>% 
+csam_time_arm <- gpp_data_active_csam %>% 
   group_by(assigned_group, time) %>% 
   summarise(
     mean_csam = mean(schimra_b_csam_hours_avg, na.rm = TRUE),
@@ -304,6 +304,30 @@ ggplot(csam_time_arm,
     color = "Group"
   ) +
   theme_classic()
+
+##### Hours (daily average) -- All participants
+
+lmm_csam_hours_all_linear  <- lmer(schimra_b_csam_hours_avg 
+                                   ~ 1
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_csam_hours_all_quad    <- lmer(schimra_b_csam_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_csam_hours_all         <- anova(lmm_csam_hours_all_linear, 
+                                    lmm_csam_hours_all_quad, 
+                                    test = "LRT")
 
 ##### COPINE severity
 

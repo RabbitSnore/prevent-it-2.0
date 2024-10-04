@@ -2350,3 +2350,16 @@ gpp_data_main <- raw_bound %>%
     id = study_code
   ) %>% 
   type_convert()
+
+## Subgroup: People who entered the trial as active CSAM users
+
+ggp_data_active_csam <- gpp_data_main %>% 
+  group_by(id) %>% 
+  mutate(
+    active_csam = case_when(
+      schimra_b_csam_hours_avg[which(timepoint == "pre_2")] >  0 ~ 1,
+      schimra_b_csam_hours_avg[which(timepoint == "pre_2")] == 0 ~ 0
+    )
+  ) %>% 
+  ungroup() %>% 
+  filter(active_csam == 1)
