@@ -75,28 +75,28 @@ vars_pre_1 <- c(
   
   # Composites created by platform
   
-  "acess_emot_abuse",
-  "acess_phys_abuse",
-  "acess_sex_abuse",
-  "acess_emot_neglect",
-  "acess_phys_neglect",
-  "acess_mental_illness",
-  "acess_subs_abuse",
-  "acess_incarcerated",
-  "acess_sum",
-  
-  "ssas_sum",
-  
-  "sbims_b_sum",
-  
-  "audit_sum",
-  
-  "lassie_s_interests",
-  
-  "raads_14_mentdef",
-  "raads_14_socanx",
-  "raads_14_sensreact",
-  "raads_14_sum",
+  # "acess_emot_abuse",
+  # "acess_phys_abuse",
+  # "acess_sex_abuse",
+  # "acess_emot_neglect",
+  # "acess_phys_neglect",
+  # "acess_mental_illness",
+  # "acess_subs_abuse",
+  # "acess_incarcerated",
+  # "acess_sum",
+  # 
+  # "ssas_sum",
+  # 
+  # "sbims_b_sum",
+  # 
+  # "audit_sum",
+  # 
+  # "lassie_s_interests",
+  # 
+  # "raads_14_mentdef",
+  # "raads_14_socanx",
+  # "raads_14_sensreact",
+  # "raads_14_sum",
   
   # Demographic
   
@@ -312,47 +312,47 @@ vars_pre_2 <- c(
   "completed",
   
   # Composites created by platform
-  
-  "ssas_sum",
-  
-  "sbims_05",
-  "sbims_06",
-  "sbims_07",
-  
-  "sbims_a_sum",
-  "sbims_b_sum",
-  "sbims_ab_sum",
-  
-  "schimra_a2",
-  "schimra_a3",
-  "schimra_b2",
-  "schimra_b3",
-  
-  "cecwc_sum",
-  "swchs_sum",
-  
-  "hbi_19_control",
-  "hbi_19_consequences",
-  "hbi_19_coping",
-  "hbi_19_sum",
-  
-  "alcohol_multipled",
-  "alcohol_sum",
-  
-  "fsozuk6_sum",
-  
-  "rcqs_sum",
-  
-  "phq_9_sum",
-  "phq_9_suicide",
-  
-  "ips_8_sum",
-  
-  "eq5d_sum",
-  "eq5d_health",
-  
-  "truthfulness_index",
-  
+  # 
+  # "ssas_sum",
+  # 
+  # "sbims_05",
+  # "sbims_06",
+  # "sbims_07",
+  # 
+  # "sbims_a_sum",
+  # "sbims_b_sum",
+  # "sbims_ab_sum",
+  # 
+  # "schimra_a2",
+  # "schimra_a3",
+  # "schimra_b2",
+  # "schimra_b3",
+  # 
+  # "cecwc_sum",
+  # "swchs_sum",
+  # 
+  # "hbi_19_control",
+  # "hbi_19_consequences",
+  # "hbi_19_coping",
+  # "hbi_19_sum",
+  # 
+  # "alcohol_multipled",
+  # "alcohol_sum",
+  # 
+  # "fsozuk6_sum",
+  # 
+  # "rcqs_sum",
+  # 
+  # "phq_9_sum",
+  # "phq_9_suicide",
+  # 
+  # "ips_8_sum",
+  # 
+  # "eq5d_sum",
+  # "eq5d_health",
+  # 
+  # "truthfulness_index",
+  # 
   # SSAS
   
   "ssas_01",
@@ -709,24 +709,24 @@ vars_weekly <- c(
   "completed",
   
   # Composites created by platform
-  
-  "ssas_sum",
-  
-  "schimra_a2",
-  "schimra_a3",
-  "schimra_b2",
-  "schimra_b3",
-  
-  "acute_preoccupation",
-  "acute_hostility",
-  "acute_hypersexuality",
-  "acute_rejectioncontrol",
-  "acute_emotional",
-  "acute_losssocial",
-  "acute_substanceuse",
-  "acute_sum",
-  "acute_suicide",
-  
+  # 
+  # "ssas_sum",
+  # 
+  # "schimra_a2",
+  # "schimra_a3",
+  # "schimra_b2",
+  # "schimra_b3",
+  # 
+  # "acute_preoccupation",
+  # "acute_hostility",
+  # "acute_hypersexuality",
+  # "acute_rejectioncontrol",
+  # "acute_emotional",
+  # "acute_losssocial",
+  # "acute_substanceuse",
+  # "acute_sum",
+  # "acute_suicide",
+  # 
   # SSAS
   
   "ssas_01",
@@ -943,24 +943,24 @@ vars_weekly_258 <- c(
   "completed",
   
   # Composites created by platform
-  
-  "ssas_sum",
-  
-  "schimra_a2",
-  "schimra_a3",
-  "schimra_b2",
-  "schimra_b3",
-  
-  "acute_preoccupation",
-  "acute_hostility",
-  "acute_hypersexuality",
-  "acute_rejectioncontrol",
-  "acute_emotional",
-  "acute_losssocial",
-  "acute_substanceuse",
-  "acute_sum",
-  "acute_suicide",
-  
+  # 
+  # "ssas_sum",
+  # 
+  # "schimra_a2",
+  # "schimra_a3",
+  # "schimra_b2",
+  # "schimra_b3",
+  # 
+  # "acute_preoccupation",
+  # "acute_hostility",
+  # "acute_hypersexuality",
+  # "acute_rejectioncontrol",
+  # "acute_emotional",
+  # "acute_losssocial",
+  # "acute_substanceuse",
+  # "acute_sum",
+  # "acute_suicide",
+  # 
   # SSAS
   
   "ssas_01",
@@ -1198,68 +1198,68 @@ vars_post <- c(
   "completed",
   
   # Composites created by platform
-  
-  "ssas_sum",
-  
-  "sbims_05",
-  "sbims_06",
-  "sbims_07",
-  
-  "sbims_a_sum",
-  "sbims_b_sum",
-  "sbims_ab_sum",
-  
-  "schimra_a2",
-  "schimra_a3",
-  "schimra_b2",
-  "schimra_b3",
-  
-  "acute_preoccupation",
-  "acute_hostility",
-  "acute_hypersexuality",
-  "acute_rejectioncontrol",
-  "acute_emotional",
-  "acute_losssocial",
-  "acute_substanceuse",
-  "acute_sum",
-  "acute_suicide",
-  
-  "cecwc_sum",
-  "swchs_sum",
-  
-  "hbi_19_control",
-  "hbi_19_consequences",
-  "hbi_19_coping",
-  "hbi_19_sum",
-  
-  "alcohol_multipled",
-  "alcohol_sum",
-  
-  "fsozuk6_sum",
-  
-  "rcqs_sum",
-  
-  "phq_9_sum",
-  "phq_9_suicide",
-  
-  "ips_8_sum",
-  
-  "eq5d_sum",
-  "eq5d_health",
-  
-  "neq_20_frequency_ne",
-  "neq_20_frequency_t",
-  "neq_20_frequency_o",
-  "neq_20_sum_nit",
-  "neq_20_sum_nio",
-  "neq_20_sum_01",
-  "neq_20_sum_02",
-  "neq_20_sum_03",
-  "neq_20_sum_04",
-  "neq_20_sum_05",
-  
-  "truthfulness_index",
-  
+  # 
+  # "ssas_sum",
+  # 
+  # "sbims_05",
+  # "sbims_06",
+  # "sbims_07",
+  # 
+  # "sbims_a_sum",
+  # "sbims_b_sum",
+  # "sbims_ab_sum",
+  # 
+  # "schimra_a2",
+  # "schimra_a3",
+  # "schimra_b2",
+  # "schimra_b3",
+  # 
+  # "acute_preoccupation",
+  # "acute_hostility",
+  # "acute_hypersexuality",
+  # "acute_rejectioncontrol",
+  # "acute_emotional",
+  # "acute_losssocial",
+  # "acute_substanceuse",
+  # "acute_sum",
+  # "acute_suicide",
+  # 
+  # "cecwc_sum",
+  # "swchs_sum",
+  # 
+  # "hbi_19_control",
+  # "hbi_19_consequences",
+  # "hbi_19_coping",
+  # "hbi_19_sum",
+  # 
+  # "alcohol_multipled",
+  # "alcohol_sum",
+  # 
+  # "fsozuk6_sum",
+  # 
+  # "rcqs_sum",
+  # 
+  # "phq_9_sum",
+  # "phq_9_suicide",
+  # 
+  # "ips_8_sum",
+  # 
+  # "eq5d_sum",
+  # "eq5d_health",
+  # 
+  # "neq_20_frequency_ne",
+  # "neq_20_frequency_t",
+  # "neq_20_frequency_o",
+  # "neq_20_sum_nit",
+  # "neq_20_sum_nio",
+  # "neq_20_sum_01",
+  # "neq_20_sum_02",
+  # "neq_20_sum_03",
+  # "neq_20_sum_04",
+  # "neq_20_sum_05",
+  # 
+  # "truthfulness_index",
+  # 
   # SSAS
   
   "ssas_01",
@@ -1724,47 +1724,47 @@ vars_followup <- c(
   "completed",
   
   # Composites created by platform
-  
-  "ssas_sum",
-  
-  "sbims_05",
-  "sbims_06",
-  "sbims_07",
-  
-  "sbims_a_sum",
-  "sbims_b_sum",
-  "sbims_ab_sum",
-  
-  "schimra_a2",
-  "schimra_a3",
-  "schimra_b2",
-  "schimra_b3",
-  
-  "cecwc_sum",
-  "swchs_sum",
-  
-  "hbi_19_control",
-  "hbi_19_consequences",
-  "hbi_19_coping",
-  "hbi_19_sum",
-  
-  "alcohol_multipled",
-  "alcohol_sum",
-  
-  "fsozuk6_sum",
-  
-  "rcqs_sum",
-  
-  "phq_9_sum",
-  "phq_9_suicide",
-  
-  "ips_8_sum",
-  
-  "eq5d_sum",
-  "eq5d_health",
-
-  "truthfulness_index",
-  
+  # 
+  # "ssas_sum",
+  # 
+  # "sbims_05",
+  # "sbims_06",
+  # "sbims_07",
+  # 
+  # "sbims_a_sum",
+  # "sbims_b_sum",
+  # "sbims_ab_sum",
+  # 
+  # "schimra_a2",
+  # "schimra_a3",
+  # "schimra_b2",
+  # "schimra_b3",
+  # 
+  # "cecwc_sum",
+  # "swchs_sum",
+  # 
+  # "hbi_19_control",
+  # "hbi_19_consequences",
+  # "hbi_19_coping",
+  # "hbi_19_sum",
+  # 
+  # "alcohol_multipled",
+  # "alcohol_sum",
+  # 
+  # "fsozuk6_sum",
+  # 
+  # "rcqs_sum",
+  # 
+  # "phq_9_sum",
+  # "phq_9_suicide",
+  # 
+  # "ips_8_sum",
+  # 
+  # "eq5d_sum",
+  # "eq5d_health",
+  # 
+  # "truthfulness_index",
+  # 
   # SSAS
   
   "ssas_01",
@@ -2294,6 +2294,65 @@ raw_bound <- raw_bound %>%
            time_after_sq,
            .after = time_after)
 
+# Calculate SSAS total score ---------------------------------------------------
+
+# SSAS total score
+
+# Create temporary subset of only SSAS data
+
+ssas_df <- raw_bound %>% 
+  select(starts_with("ssas_")) %>% 
+  select(
+    # -ssas_sum, 
+    -ssas_next)
+
+ssas_df <- map_df(ssas_df, as.numeric)
+
+# Special handling for modifications to items 3, 6, and 8
+
+# The original SSAS scale requested time estimates of certain behaviors using
+# prespecified intervals. We modified the scale to request an amount of time in
+# hours for these items. As planned, these items will be transformed into a 0 to
+# 4 scale by creating quantiles for the non-zero values.
+
+quantiles_ssas_03 <- quantile(ssas_df$ssas_03[ssas_df$ssas_03 != 0], 
+                              na.rm = TRUE)
+
+quantiles_ssas_06 <- quantile(ssas_df$ssas_06[ssas_df$ssas_06 != 0], 
+                              na.rm = TRUE)
+
+quantiles_ssas_08 <- quantile(ssas_df$ssas_08[ssas_df$ssas_08 != 0], 
+                              na.rm = TRUE)
+
+ssas_df <- ssas_df %>% 
+  mutate(
+    ssas_03 = case_when(
+      ssas_03 >= quantiles_ssas_03[[4]]                                    ~ 4,
+      ssas_03 >= quantiles_ssas_03[[3]] & ssas_03 < quantiles_ssas_03[[4]] ~ 3,
+      ssas_03 >= quantiles_ssas_03[[2]] & ssas_03 < quantiles_ssas_03[[3]] ~ 2,
+      ssas_03 >= quantiles_ssas_03[[1]] & ssas_03 < quantiles_ssas_03[[2]] ~ 1,
+      ssas_03 == 0                                                         ~ 0
+    ),
+    ssas_06 = case_when(
+      ssas_06 >= quantiles_ssas_06[[4]]                                    ~ 4,
+      ssas_06 >= quantiles_ssas_06[[3]] & ssas_06 < quantiles_ssas_06[[4]] ~ 3,
+      ssas_06 >= quantiles_ssas_06[[2]] & ssas_06 < quantiles_ssas_06[[3]] ~ 2,
+      ssas_06 >= quantiles_ssas_06[[1]] & ssas_06 < quantiles_ssas_06[[2]] ~ 1,
+      ssas_06 == 0                                                         ~ 0
+    ),
+    ssas_08 = case_when(
+      ssas_08 >= quantiles_ssas_08[[4]]                                    ~ 4,
+      ssas_08 >= quantiles_ssas_08[[3]] & ssas_08 < quantiles_ssas_08[[4]] ~ 3,
+      ssas_08 >= quantiles_ssas_08[[2]] & ssas_08 < quantiles_ssas_08[[3]] ~ 2,
+      ssas_08 >= quantiles_ssas_08[[1]] & ssas_08 < quantiles_ssas_08[[2]] ~ 1,
+      ssas_08 == 0                                                         ~ 0
+    )
+  )
+
+# Calculate total scores
+
+raw_bound$ssas_sumscore  <- rowSums(ssas_df)
+
 # Calculate SChiMRA Part B Behaviors -------------------------------------------
 
 # CSAM use
@@ -2353,7 +2412,7 @@ gpp_data_main <- raw_bound %>%
 
 ## Subgroup: People who entered the trial as active CSAM users
 
-ggp_data_active_csam <- gpp_data_main %>% 
+gpp_data_active_csam <- gpp_data_main %>% 
   group_by(id) %>% 
   mutate(
     active_csam = case_when(

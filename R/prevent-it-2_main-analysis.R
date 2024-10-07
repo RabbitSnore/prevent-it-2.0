@@ -88,7 +88,7 @@ lapply(packages, library, character.only = TRUE)
 # Treatment group and the waitlist group (after treatment). This follow-up 
 # measure point will not be included in the primary analysis.
 
-lmm_ssas_linear      <- lmer(ssas_sum 
+lmm_ssas_linear      <- lmer(ssas_sumscore 
                              ~ 1 
                              + treatment 
                              + time 
@@ -96,7 +96,7 @@ lmm_ssas_linear      <- lmer(ssas_sum
                              + (1|id), 
                              data = gpp_data_main)
 
-lmm_ssas_quad        <- lmer(ssas_sum 
+lmm_ssas_quad        <- lmer(ssas_sumscore 
                              ~ 1 
                              + treatment 
                              + time 
@@ -115,14 +115,15 @@ lrt_sass             <- anova(lmm_ssas_linear,
 ssas_time_arm <- gpp_data_main %>% 
   group_by(assigned_group, time) %>% 
   summarise(
-    mean_ssas = mean(ssas_sum, na.rm = TRUE),
-    sd_ssas   = sd(ssas_sum, na.rm = TRUE),
+    mean_ssas = mean(ssas_sumscore, na.rm = TRUE),
+    sd_ssas   = sd(ssas_sumscore, na.rm = TRUE),
     se_ssas   = sd_ssas/n(),
     ci_lb     = mean_ssas - se_ssas*qnorm(.975),
     ci_ub     = mean_ssas + se_ssas*qnorm(.975),
     n         = n()
   )
 
+plot_ssas_time <- 
 ggplot(ssas_time_arm,
        aes(
          x     = time, 
@@ -143,7 +144,7 @@ ggplot(ssas_time_arm,
     breaks = 0:max(ssas_time_arm$time)
   ) +
   scale_y_continuous(
-    breaks = 0:4
+    breaks = 0:48
   ) +
   labs(
     x = "Time",
@@ -188,7 +189,7 @@ gpp_data_main$inv_mills <- dnorm( predict(miss_ssas) ) / pnorm( predict(miss_ssa
 
 ### Outcome model
 
-lmm_sass_sens_linear      <- lmer(ssas_sum 
+lmm_sass_sens_linear      <- lmer(ssas_sumscore 
                                   ~ 1 
                                   + treatment 
                                   + time 
@@ -197,7 +198,7 @@ lmm_sass_sens_linear      <- lmer(ssas_sum
                                   + (1|id), 
                                   data = gpp_data_main)
 
-lmm_sass_sens_quad        <- lmer(ssas_sum 
+lmm_sass_sens_quad        <- lmer(ssas_sumscore 
                                   ~ 1 
                                   + treatment 
                                   + time 
@@ -279,6 +280,7 @@ csam_time_arm <- gpp_data_active_csam %>%
     n         = n()
   )
 
+plot_csam_time <- 
 ggplot(csam_time_arm,
        aes(
          x     = time, 
