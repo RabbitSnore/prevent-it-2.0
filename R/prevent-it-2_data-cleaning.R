@@ -20,33 +20,46 @@ lapply(packages, library, character.only = TRUE)
 
 # Pre-Questionnaire
 
-raw_pre_1      <- read_xlsx("data/gpp_test-data_pre-1.xlsx", 
+raw_pre_1      <- read_xlsx("data/gpp_data_pre-1.xlsx", 
                             col_types = "text",
                             trim_ws = TRUE)
 
-raw_pre_2      <- read_xlsx("data/gpp_test-data_pre-2.xlsx",
+raw_pre_2      <- read_xlsx("data/gpp_data_pre-2.xlsx",
                             col_types = "text",
                             trim_ws = TRUE)
+
+## Pre-revision versions
+
+# The pre-questionnaires were revised early in data collection to become
+# consistent with the procedure in the PRIORITY project.
+
+raw_pre_1b    <- read_xlsx("data/gpp_data_pre-1b.xlsx", 
+                           col_types = "text",
+                           trim_ws = TRUE)
+
+raw_pre_2b    <- read_xlsx("data/gpp_data_pre-2b.xlsx",
+                           col_types = "text",
+                           trim_ws = TRUE)
 
 # Weekly measures
 
-raw_weekly     <- read_xlsx("data/gpp_test-data_weekly.xlsx",
+raw_weekly     <- read_xlsx("data/gpp_data_weekly.xlsx",
                             col_types = "text",
                             trim_ws = TRUE)
 
-raw_weekly_258 <- read_xlsx("data/gpp_test-data_weekly258.xlsx",
+raw_weekly_258 <- read_xlsx("data/gpp_data_weekly258.xlsx",
                             col_types = "text",
                             trim_ws = TRUE)
 
 # Post questionnaire
 
-raw_post       <- read_xlsx("data/gpp_test-data_post.xlsx",
+raw_post       <- read_xlsx("data/gpp_data_post.xlsx",
                             col_types = "text",
                             trim_ws = TRUE)
 
 # Follow up
 
-raw_follow     <- read_xlsx("data/gpp_test-data_followup.xlsx",
+raw_follow     <- read_xlsx("data/gpp_data_followup.xlsx",
                             col_types = "text",
                             trim_ws = TRUE)
 
@@ -294,6 +307,308 @@ vars_pre_1 <- c(
   
   "criminal_age",
   "criminal_romantic_partner"
+  
+)
+
+vars_pre_1b <- c(
+  
+  # Study information
+  
+  "pre_1",
+  
+  "study_code",
+  "groups",
+  "valid_from",
+  "valid_until",
+  "completed",
+  
+  # Composites created by platform
+  
+  # "acess_emot_abuse",
+  # "acess_phys_abuse",
+  # "acess_sex_abuse",
+  # "acess_emot_neglect",
+  # "acess_phys_neglect",
+  # "acess_mental_illness",
+  # "acess_subs_abuse",
+  # "acess_incarcerated",
+  # "acess_sum",
+  # 
+  # "ssas_sum",
+  # 
+  # "sbims_b_sum",
+  # 
+  # "audit_sum",
+  # 
+  # "lassie_s_interests",
+  # 
+  # "raads_14_mentdef",
+  # "raads_14_socanx",
+  # "raads_14_sensreact",
+  # "raads_14_sum",
+  
+  # Demographic (relationships)
+  
+  "relationships_01",
+  "relationships_02",
+  "relationships_03",
+  "relationships_04",
+  "relationships_05",
+  "relationships_06",
+  "relationships_07",
+  "relationships_08",
+  "relationships_09",
+  "relationships_10",
+  "relationships_11",
+  
+  # Demographic
+  
+  "religion_importance",
+  "religion_frequency",
+  
+  # ACEs-s items
+  
+  "acess_pre_b_01",
+  "acess_pre_b_02",
+  "acess_pre_b_03",
+  "acess_pre_b_04",
+  "acess_pre_b_05",
+  "acess_pre_b_06",
+  "acess_pre_b_07",
+  "acess_pre_b_08",
+  "acess_pre_b_09",
+  "acess_pre_b_10",
+  "acess_pre_b_11",
+  "acess_pre_b_12",
+  "acess_pre_b_13",
+  "acess_pre_b_14",
+  "acess_pre_b_15",
+  "acess_pre_b_16",
+  "acess_pre_b_17",
+  "acess_pre_b_18",
+  "acess_pre_b_19",
+  "acess_pre_b_20",
+  "acess_pre_b_21",
+  "acess_pre_b_22",
+  "acess_pre_b_23",
+  "acess_pre_b_24",
+  "acess_pre_b_25",
+  "acess_pre_b_26",
+  "acess_pre_b_27",
+  "acess_pre_b_28",
+  "acess_pre_b_29",
+  "acess_pre_b_30",
+  "acess_pre_b_31",
+  "acess_pre_b_32",
+  
+  # SSAS
+  
+  "ssas_01",
+  "ssas_02",
+  "ssas_03",
+  "ssas_04",
+  "ssas_05",
+  "ssas_06",
+  "ssas_07",
+  "ssas_08",
+  "ssas_09",
+  "ssas_10",
+  "ssas_11",
+  "ssas_12",
+  
+  # SBIMS-B
+  
+  "sbimsb_sexualcontact",
+  "sbimsb_exposure",
+  "sbimsb_sexualinteractions",
+  "sbimsb_physicalcontact",
+  "sbimsb_csam",
+  
+  # AUDIT
+  
+  "audit_01",
+  "audit_02",
+  "audit_03",
+  
+  # LASSIE
+  
+  ## 01 Interest/urges
+  ## 02 Acted
+  ## 03 Impairment
+  ## 04 Duration
+  ## 05 Current
+  
+  "lassie_expositionism_01",
+  "lassie_expositionism_02",
+  "lassie_expositionism_03",
+  "lassie_expositionism_04",
+  "lassie_expositionism_05",
+  
+  "lassie_voyeurism_01",
+  "lassie_voyeurism_02",
+  "lassie_voyeurism_03",
+  "lassie_voyeurism_04",
+  "lassie_voyeurism_05",
+  
+  "lassie_fetishism_01",
+  "lassie_fetishism_02",
+  "lassie_fetishism_03",
+  "lassie_fetishism_04",
+  "lassie_fetishism_05",
+  
+  "lassie_hebephilia_01",
+  "lassie_hebephilia_02",
+  "lassie_hebephilia_03",
+  "lassie_hebephilia_04",
+  "lassie_hebephilia_05",
+  
+  "lassie_pedophilia_01",
+  "lassie_pedophilia_02",
+  "lassie_pedophilia_03",
+  "lassie_pedophilia_04",
+  "lassie_pedophilia_05",
+  
+  "lassie_masochism_01",
+  "lassie_masochism_02",
+  "lassie_masochism_03",
+  "lassie_masochism_04",
+  "lassie_masochism_05",
+  
+  "lassie_sadism_01",
+  "lassie_sadism_02",
+  "lassie_sadism_03",
+  "lassie_sadism_04",
+  "lassie_sadism_05",
+  
+  "lassie_frotteurism_01",
+  "lassie_frotteurism_02",
+  "lassie_frotteurism_03",
+  "lassie_frotteurism_04",
+  "lassie_frotteurism_05",
+  
+  "lassie_scatologia_01",
+  "lassie_scatologia_02",
+  "lassie_scatologia_03",
+  "lassie_scatologia_04",
+  "lassie_scatologia_05",
+  
+  "lassie_necrophilia_01",
+  "lassie_necrophilia_02",
+  "lassie_necrophilia_03",
+  "lassie_necrophilia_04",
+  "lassie_necrophilia_05",
+  
+  "lassie_asphyxia_01",
+  "lassie_asphyxia_02",
+  "lassie_asphyxia_03",
+  "lassie_asphyxia_04",
+  "lassie_asphyxia_05",
+  
+  "lassie_zoophilia_01",
+  "lassie_zoophilia_02",
+  "lassie_zoophilia_03",
+  "lassie_zoophilia_04",
+  "lassie_zoophilia_05",
+  
+  "lassie_urophilia_01",
+  "lassie_urophilia_02",
+  "lassie_urophilia_03",
+  "lassie_urophilia_04",
+  "lassie_urophilia_05",
+  
+  "lassie_coprophilia_01",
+  "lassie_coprophilia_02",
+  "lassie_coprophilia_03",
+  "lassie_coprophilia_04",
+  "lassie_coprophilia_05",
+  
+  "lassie_other_01",
+  "lassie_other_01_text",
+  "lassie_other_02",
+  "lassie_other_02_text",
+  "lassie_other_03",
+  "lassie_other_04",
+  "lassie_other_05",
+  
+  # Additional LASSIE
+  
+  "lassie_intensity_01",
+  "lassie_intensity_02",
+  "lassie_intensity_03",
+  "lassie_intensity_04",
+  "lassie_intensity_05",
+  
+  # RAADS-14
+  
+  "raads_14_01",
+  "raads_14_02",
+  "raads_14_03",
+  "raads_14_04",
+  "raads_14_05",
+  "raads_14_06",
+  "raads_14_07",
+  "raads_14_08",
+  "raads_14_09",
+  "raads_14_10",
+  "raads_14_11",
+  "raads_14_12",
+  "raads_14_13",
+  "raads_14_14",
+  
+  # Criminal history
+  
+  "criminal_pre_1b_01",
+  "criminal_pre_1b_02",
+  "criminal_pre_1b_03",
+  "criminal_pre_1b_04",
+  "criminal_pre_1b_05",
+  "criminal_pre_1b_06",
+  "criminal_pre_1b_07",
+  "criminal_pre_1b_08",
+  "criminal_pre_1b_09",
+  "criminal_pre_1b_10",
+  "criminal_pre_1b_11",
+  "criminal_pre_1b_12",
+  "criminal_pre_1b_13",
+  "criminal_pre_1b_14",
+  "criminal_pre_1b_15",
+  "criminal_pre_1b_16",
+  "criminal_pre_1b_17",
+  "criminal_pre_1b_18",
+  "criminal_pre_1b_19",
+  "criminal_pre_1b_20",
+  "criminal_pre_1b_21",
+  "criminal_pre_1b_22",
+  "criminal_pre_1b_23",
+  "criminal_pre_1b_24",
+  "criminal_pre_1b_25",
+  "criminal_pre_1b_26",
+  "criminal_pre_1b_27",
+  "criminal_pre_1b_28",
+  "criminal_pre_1b_29",
+  "criminal_pre_1b_30",
+  "criminal_pre_1b_31",
+  "criminal_pre_1b_32",
+  "criminal_pre_1b_33",
+  "criminal_pre_1b_34",
+  "criminal_pre_1b_35",
+  "criminal_pre_1b_36",
+  "criminal_pre_1b_37",
+  "criminal_pre_1b_38",
+  "criminal_pre_1b_39",
+  "criminal_pre_1b_40",
+  "criminal_pre_1b_41",
+  "criminal_pre_1b_42",
+  "criminal_pre_1b_43",
+  "criminal_pre_1b_44",
+  "criminal_pre_1b_45",
+  "criminal_pre_1b_46",
+  "criminal_pre_1b_47",
+  "criminal_pre_1b_48",
+  "criminal_pre_1b_49",
+  "criminal_pre_1b_50",
+  "criminal_pre_1b_51",
+  "criminal_pre_1b_52"
   
 )
 
@@ -666,6 +981,472 @@ vars_pre_2 <- c(
   "eq5d_pain",
   "eq5d_anxiety_depression",
   "eq5d_vas",
+  
+  # Language
+  
+  "language_native",
+  "language_en_understanding",
+  "language_en_read",
+  "language_en_write",
+  "language_en_oftenhear",
+  "language_en_oftenread",
+  
+  "function_a_01",
+  "function_a_02",
+  "function_a_03",
+  "function_a_04",
+  
+  "function_b_01",
+  "function_b_02",
+  "function_b_03",
+  "function_b_04",
+  
+  # Truthfulness
+  
+  "truthfulness_honest",
+  "truthfulness_if_dishonest",
+  "truthfulness_other"
+  
+)
+
+vars_pre_2b <- c(
+  
+  # Study information 
+  
+  "pre_2",
+  
+  "study_code",
+  "groups",
+  "valid_from",
+  "valid_until",
+  "completed",
+  
+  # Composites created by platform
+  # 
+  # "ssas_sum",
+  # 
+  # "sbims_05",
+  # "sbims_06",
+  # "sbims_07",
+  # 
+  # "sbims_a_sum",
+  # "sbims_b_sum",
+  # "sbims_ab_sum",
+  # 
+  # "schimra_a2",
+  # "schimra_a3",
+  # "schimra_b2",
+  # "schimra_b3",
+  # 
+  # "cecwc_sum",
+  # "swchs_sum",
+  # 
+  # "hbi_19_control",
+  # "hbi_19_consequences",
+  # "hbi_19_coping",
+  # "hbi_19_sum",
+  # 
+  # "alcohol_multipled",
+  # "alcohol_sum",
+  # 
+  # "fsozuk6_sum",
+  # 
+  # "rcqs_sum",
+  # 
+  # "phq_9_sum",
+  # "phq_9_suicide",
+  # 
+  # "ips_8_sum",
+  # 
+  # "eq5d_sum",
+  # "eq5d_health",
+  # 
+  # "truthfulness_index",
+  # 
+  # SSAS
+  
+  "ssas_01",
+  "ssas_02",
+  "ssas_03",
+  "ssas_04",
+  "ssas_05",
+  "ssas_06",
+  "ssas_07",
+  "ssas_08",
+  "ssas_09",
+  "ssas_10",
+  "ssas_11",
+  "ssas_12",
+  
+  "ssas_next",
+  
+  # SBIMS
+  
+  "sbimsa_sexualcontact",
+  "sbimsa_exposure",
+  "sbimsa_sexualinteractions",
+  "sbimsa_physicalcontact",
+  
+  "sbimsb_sexualcontact",
+  "sbimsb_exposure",
+  "sbimsb_sexualinteractions",
+  "sbimsb_physicalcontact",
+  "sbimsb_csam",
+  
+  # SChiMRA
+  
+  ## Part A
+  
+  "schimra_a_watch",
+  "schimra_a_socialize",
+  "schimra_a_interact",
+  
+  ## Part B
+  
+  ### CSAM
+  
+  "schimra_b_csam",
+  
+  "schimra_b_csam_day1_hours",
+  "schimra_b_csam_day1_minutes",
+  
+  "schimra_b_csam_day2_hours",
+  "schimra_b_csam_day2_minutes",
+  
+  "schimra_b_csam_day3_hours",
+  "schimra_b_csam_day3_minutes",
+  
+  "schimra_b_csam_day4_hours",
+  "schimra_b_csam_day4_minutes",
+  
+  "schimra_b_csam_day5_hours",
+  "schimra_b_csam_day5_minutes",
+  
+  "schimra_b_csam_day6_hours",
+  "schimra_b_csam_day6_minutes",
+  
+  "schimra_b_csam_day7_hours",
+  "schimra_b_csam_day7_minutes",
+  
+  "schimra_b_csam_copine_day1",
+  "schimra_b_csam_copine_day2",
+  "schimra_b_csam_copine_day3",
+  "schimra_b_csam_copine_day4",
+  "schimra_b_csam_copine_day5",
+  "schimra_b_csam_copine_day6",
+  "schimra_b_csam_copine_day7",
+  
+  "schimra_b_csam_ayc_day1",
+  "schimra_b_csam_ayc_day2",
+  "schimra_b_csam_ayc_day3",
+  "schimra_b_csam_ayc_day4",
+  "schimra_b_csam_ayc_day5",
+  "schimra_b_csam_ayc_day6",
+  "schimra_b_csam_ayc_day7",
+  
+  ### Socialization
+  
+  "schimra_b_socialize",
+  
+  "schimra_b_socialize_day1_hours",
+  "schimra_b_socialize_day1_minutes",
+  
+  "schimra_b_socialize_day2_hours",
+  "schimra_b_socialize_day2_minutes",
+  
+  "schimra_b_socialize_day3_hours",
+  "schimra_b_socialize_day3_minutes",
+  
+  "schimra_b_socialize_day4_hours",
+  "schimra_b_socialize_day4_minutes",
+  
+  "schimra_b_socialize_day5_hours",
+  "schimra_b_socialize_day5_minutes",
+  
+  "schimra_b_socialize_day6_hours",
+  "schimra_b_socialize_day6_minutes",
+  
+  "schimra_b_socialize_day7_hours",
+  "schimra_b_socialize_day7_minutes",
+  
+  "schimra_b_socialize_ayc_day1",
+  "schimra_b_socialize_ayc_day2",
+  "schimra_b_socialize_ayc_day3",
+  "schimra_b_socialize_ayc_day4",
+  "schimra_b_socialize_ayc_day5",
+  "schimra_b_socialize_ayc_day6",
+  "schimra_b_socialize_ayc_day7",
+  
+  ### Interacting
+  
+  "schimra_b_interact",
+  
+  "schimra_b_interact_day1_hours",
+  "schimra_b_interact_day1_minutes",
+  
+  "schimra_b_interact_day2_hours",
+  "schimra_b_interact_day2_minutes",
+  
+  "schimra_b_interact_day3_hours",
+  "schimra_b_interact_day3_minutes",
+  
+  "schimra_b_interact_day4_hours",
+  "schimra_b_interact_day4_minutes",
+  
+  "schimra_b_interact_day5_hours",
+  "schimra_b_interact_day5_minutes",
+  
+  "schimra_b_interact_day6_hours",
+  "schimra_b_interact_day6_minutes",
+  
+  "schimra_b_interact_day7_hours",
+  "schimra_b_interact_day7_minutes",
+  
+  "schimra_b_interact_ayc_day1",
+  "schimra_b_interact_ayc_day2",
+  "schimra_b_interact_ayc_day3",
+  "schimra_b_interact_ayc_day4",
+  "schimra_b_interact_ayc_day5",
+  "schimra_b_interact_ayc_day6",
+  "schimra_b_interact_ayc_day7",
+  
+  ### Other behaviors
+  
+  "schimra_b_other",
+  
+  "schimra_b_other_day1_behavior",
+  "schimra_b_other_day2_behavior",
+  "schimra_b_other_day3_behavior",
+  "schimra_b_other_day4_behavior",
+  "schimra_b_other_day5_behavior",
+  "schimra_b_other_day6_behavior",
+  "schimra_b_other_day7_behavior",
+  
+  "schimra_b_other_day1_hours",
+  "schimra_b_other_day1_minutes",
+  
+  "schimra_b_other_day2_hours",
+  "schimra_b_other_day2_minutes",
+  
+  "schimra_b_other_day3_hours",
+  "schimra_b_other_day3_minutes",
+  
+  "schimra_b_other_day4_hours",
+  "schimra_b_other_day4_minutes",
+  
+  "schimra_b_other_day5_hours",
+  "schimra_b_other_day5_minutes",
+  
+  "schimra_b_other_day6_hours",
+  "schimra_b_other_day6_minutes",
+  
+  "schimra_b_other_day7_hours",
+  "schimra_b_other_day7_minutes",
+  
+  "schimra_b_other_ayc_day1",
+  "schimra_b_other_ayc_day2",
+  "schimra_b_other_ayc_day3",
+  "schimra_b_other_ayc_day4",
+  "schimra_b_other_ayc_day5",
+  "schimra_b_other_ayc_day6",
+  "schimra_b_other_ayc_day7",
+  
+  # C-ECWC
+  
+  "cecwc_01",
+  "cecwc_02",
+  "cecwc_03",
+  "cecwc_04",
+  
+  "cecwc_pre_2b_01",
+  "cecwc_pre_2b_02",
+  
+  "cecwc_05",
+  
+  "cecwc_pre_2b_03",
+  "cecwc_pre_2b_04",
+  "cecwc_pre_2b_05",
+  "cecwc_pre_2b_06",
+  "cecwc_pre_2b_07",
+  
+  # SWCH-s
+  
+  "swch_pre_2b_01",
+  
+  "swch_01",
+  "swch_02",
+  "swch_03",
+  
+  "swch_pre_2b_02",
+  "swch_pre_2b_03",
+  "swch_pre_2b_04",
+  "swch_pre_2b_05",
+  "swch_pre_2b_06",
+  "swch_pre_2b_07",
+  
+  "swch_04",
+  
+  "swch_pre_2b_08",
+  "swch_pre_2b_09",
+  "swch_pre_2b_10",
+  
+  "swch_05",
+  "swch_06",
+  "swch_07",
+  "swch_08",
+  
+  # HBI-19
+  
+  "hbi_19_01",
+  "hbi_19_02",
+  "hbi_19_03",
+  "hbi_19_04",
+  "hbi_19_05",
+  "hbi_19_06",
+  "hbi_19_07",
+  "hbi_19_08",
+  "hbi_19_09",
+  "hbi_19_10",
+  "hbi_19_11",
+  "hbi_19_12",
+  "hbi_19_13",
+  "hbi_19_14",
+  "hbi_19_15",
+  "hbi_19_16",
+  "hbi_19_17",
+  "hbi_19_18",
+  "hbi_19_19",
+  
+  # Alcohol use
+  
+  "alcoholuse_01",
+  "alcoholuse_02",
+  
+  # BSCS
+  
+  "bscs_01",
+  "bscs_02",
+  "bscs_03",
+  "bscs_04",
+  "bscs_05",
+  "bscs_06",
+  "bscs_07",
+  "bscs_08",
+  "bscs_09",
+  "bscs_10",
+  "bscs_11",
+  "bscs_12",
+  "bscs_13",
+  
+  # F-SozU
+  
+  "fsozuk6_01",
+  "fsozuk6_02",
+  "fsozuk6_03",
+  "fsozuk6_04",
+  "fsozuk6_05",
+  "fsozuk6_06",
+  
+  # RCQ
+  
+  "rcq_pre_2b_01",
+  "rcq_pre_2b_02",
+  "rcq_pre_2b_03",
+  
+  "rcq_01",
+  "rcq_02",
+  "rcq_03",
+  "rcq_04",
+  
+  "rcq_pre_2b_04",
+  
+  "rcq_05",
+  
+  "rcq_pre_2b_05",
+  "rcq_pre_2b_06",
+  
+  "rcq_06",
+  
+  # Demographics
+  
+  "leisure_working",
+  "leisure_sports",
+  "leisure_school",
+  "leisure_home",
+  "leisure_computer",
+  "leisure_goingout",
+  "leisure_high",
+  "leisure_drunk",
+  "leisure_lazing",
+  "leisure_reading",
+  "leisure_cinema",
+  "leisure_tv",
+  "leisure_music",
+  "leisure_what_idk",
+  "leisure_what_other",
+  
+  "leisure_alone",
+  "leisure_partner",
+  "leisure_friends",
+  "leisure_sportcolleagues",
+  "leisure_schoolcolleagues",
+  "leisure_workcolleagues",
+  "leisure_siblings",
+  "leisure_children",
+  "leisure_family",
+  "leisure_who_idk",
+  "leisure_who_other",
+  
+  # PHQ-9
+  
+  "phq_01",
+  "phq_02",
+  "phq_03",
+  "phq_04",
+  "phq_05",
+  "phq_06",
+  "phq_07",
+  "phq_08",
+  "phq_09",
+  
+  # IPS-8
+  
+  "ips_01",
+  "ips_02",
+  "ips_03",
+  "ips_04",
+  "ips_05",
+  "ips_06",
+  "ips_07",
+  "ips_08",
+  
+  # EQ5D
+  
+  "eq5d_mobility",
+  "eq5d_selfcare",
+  "eq5d_usualactivities",
+  "eq5d_pain",
+  "eq5d_anxiety_depression",
+  "eq5d_vas",
+  
+  # BIDR-SF
+  
+  "bidr_01",
+  "bidr_02",
+  "bidr_03",
+  "bidr_04",
+  "bidr_05",
+  "bidr_06",
+  "bidr_07",
+  "bidr_08",
+  "bidr_09",
+  "bidr_10",
+  "bidr_11",
+  "bidr_12",
+  "bidr_13",
+  "bidr_14",
+  "bidr_15",
+  "bidr_16",
   
   # Language
   
@@ -2091,6 +2872,8 @@ vars_followup <- c(
 
 colnames(raw_pre_1)      <- vars_pre_1
 colnames(raw_pre_2)      <- vars_pre_2
+colnames(raw_pre_1b)     <- vars_pre_1b
+colnames(raw_pre_2b)     <- vars_pre_2b
 colnames(raw_weekly)     <- vars_weekly
 colnames(raw_weekly_258) <- vars_weekly_258
 colnames(raw_post)       <- vars_post
@@ -2104,6 +2887,16 @@ raw_pre_1 <- raw_pre_1 %>%
   )
 
 raw_pre_2 <- raw_pre_2 %>% 
+  mutate(
+    timepoint = "pre_2"
+  )
+
+raw_pre_1b <- raw_pre_1b %>% 
+  mutate(
+    timepoint = "pre_1"
+  )
+
+raw_pre_2b <- raw_pre_2b %>% 
   mutate(
     timepoint = "pre_2"
   )
@@ -2139,6 +2932,7 @@ raw_follow <- raw_follow %>%
 
 raw_bound <- bind_rows(
   raw_pre_1, raw_pre_2,
+  raw_pre_1b, raw_pre_2b,
   raw_weekly, raw_weekly_258,
   raw_post,
   raw_follow
@@ -2175,8 +2969,8 @@ raw_bound$completed   <- ymd_hm(raw_bound$completed)
 raw_bound <- raw_bound %>% 
   mutate(
     assigned_group = case_when(
-      str_detect(groups, "TREATMENT") ~ "cbt", 
       str_detect(groups, "WAITLIST")  ~ "waitlist", 
+      str_detect(groups, "TREATMENT") ~ "cbt"
     )
   ) %>% 
   relocate(assigned_group, .before = timepoint)
