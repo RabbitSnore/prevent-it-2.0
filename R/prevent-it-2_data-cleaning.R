@@ -2994,6 +2994,13 @@ raw_bound <- raw_bound %>%
            treatment, 
            .after = timepoint)
 
+## Set NA to 0
+
+# The procedure above gives a missing value to waitlist participants who did not
+# start the treatment. These cases should be set to 0.
+
+raw_bound$treatment[is.na(raw_bound$treatment)] <- 0
+
 # Identify first weekly measure on waitlist and in treatment
 
 raw_bound <- raw_bound %>% 
@@ -3046,7 +3053,7 @@ raw_bound <- raw_bound %>%
       assigned_group == "waitlist" & valid_from == first_waitlist_weekly ~ 1,
       
       assigned_group == "waitlist" & valid_from > first_waitlist_weekly 
-      ~ as.numeric(difftime(valid_from, waitlist_reference_weekly, units = "weeks")) + 1,
+      ~ as.numeric(difftime(valid_from, first_waitlist_weekly, units = "weeks")) + 1,
       
       assigned_group == "cbt" & valid_from < first_treatment_weekly      ~ 0,
       assigned_group == "cbt" & valid_from >= first_treatment_weekly  
@@ -3077,7 +3084,12 @@ raw_bound <- raw_bound %>%
   relocate(time_after,
            .after = treatment)
 
-# Calculate quadradic terms
+# Round time variables to nearest week
+
+raw_bound$time       <- round(raw_bound$time) 
+raw_bound$time_after <- round(raw_bound$time_after)
+
+# Calculate quadratic terms
 
 raw_bound <- raw_bound %>% 
   mutate(
@@ -3087,6 +3099,43 @@ raw_bound <- raw_bound %>%
   relocate(time_sq,
            time_after_sq,
            .after = time_after)
+
+# Handling of specific cases ---------------------------------------------------
+
+# Load masked information
+
+# This script is used to specify information that is masked from public view.
+
+source("R/prevent-it-2_masked.R")
+
+# Remove test cases
+
+raw_bound <- raw_bound %>% 
+  filter(!str_detect(groups, "Test patients"))
+
+# Remove all cases not randomized
+
+raw_bound <- raw_bound %>% 
+  filter(str_detect(groups, "randomized"))
+
+# Case with missing waitlist questionnaires
+
+# This waitlist participant was erroneously never sent any questionnaires during
+# the waitlist period. As such, their time variables need to be adjusted to
+# account for this.
+
+wl_missed_time <- 
+  as.numeric(
+    round(
+      difftime(
+        raw_bound[raw_bound$study_code == case_wl_missed, ]$valid_from, 
+        min(raw_bound[raw_bound$study_code == case_wl_missed, ]$valid_from), 
+        units = "weeks")
+    )
+  )
+
+raw_bound[raw_bound$study_code == case_wl_missed, ]$time    <- wl_missed_time
+raw_bound[raw_bound$study_code == case_wl_missed, ]$time_sq <- wl_missed_time^2
 
 # Calculate SSAS total score ---------------------------------------------------
 
@@ -3210,8 +3259,8 @@ gpp_data_active_csam <- gpp_data_main %>%
   group_by(id) %>% 
   mutate(
     active_csam = case_when(
-      schimra_b_csam_hours_avg[which(timepoint == "pre_2")] >  0 ~ 1,
-      schimra_b_csam_hours_avg[which(timepoint == "pre_2")] == 0 ~ 0
+      schimra_b_csam_hours_avg[which(timepoint == "pre_2")[1]] >  0 ~ 1,
+      schimra_b_csam_hours_avg[which(timepoint == "pre_2")[1]] == 0 ~ 0
     )
   ) %>% 
   ungroup() %>% 
