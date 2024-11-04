@@ -15,9 +15,6 @@ lapply(packages, library, character.only = TRUE)
 
 # Data loading -----------------------------------------------------------------
 
-#  Note that this code is currently written to load test data, rather than the
-#  real data.
-
 # Pre-Questionnaire
 
 raw_pre_1      <- read_xlsx("data/gpp_data_pre-1.xlsx", 
@@ -3118,7 +3115,7 @@ raw_bound <- raw_bound %>%
 raw_bound <- raw_bound %>% 
   filter(str_detect(groups, "randomized"))
 
-# Case with missing waitlist questionnaires
+# Cases with missing waitlist questionnaires
 
 # This waitlist participant was erroneously never sent any questionnaires during
 # the waitlist period. As such, their time variables need to be adjusted to
@@ -3136,6 +3133,27 @@ wl_missed_time <-
 
 raw_bound[raw_bound$study_code == case_wl_missed, ]$time    <- wl_missed_time
 raw_bound[raw_bound$study_code == case_wl_missed, ]$time_sq <- wl_missed_time^2
+
+# This waitlist participant either did not complete or never received the weekly
+# questionnaires during the waitlist period
+
+wl_missed_time_2 <- 
+  as.numeric(
+    round(
+      difftime(
+        raw_bound[raw_bound$study_code == case_wl_missed_2, ]$valid_from, 
+        min(raw_bound[raw_bound$study_code == case_wl_missed_2, ]$valid_from), 
+        units = "weeks")
+    )
+  )
+
+raw_bound[raw_bound$study_code == case_wl_missed_2, ]$time    <- wl_missed_time_2
+raw_bound[raw_bound$study_code == case_wl_missed_2, ]$time_sq <- wl_missed_time_2^2
+
+# Remove masked objects, just in case
+
+rm(case_wl_missed) 
+rm(case_wl_missed_2) 
 
 # Calculate SSAS total score ---------------------------------------------------
 
@@ -3235,6 +3253,243 @@ raw_bound <- raw_bound %>%
   )
 
 raw_bound$schimra_b_csam_hours_avg <- raw_bound$schimra_b_csam_hours_sum/7
+
+## COPINE severity
+
+csam_copine_df <- raw_bound %>% 
+  select(starts_with("schimra_b_csam_copine")) %>% 
+  type_convert()
+
+### Weekly maximum
+
+copine_max <- apply(csam_copine_df, 1, max, na.rm = TRUE)
+copine_max[copine_max == -Inf] <- NA
+
+### Weekly average
+
+copine_mean <- rowMeans(csam_copine_df, na.rm = TRUE)
+
+### Add to data
+
+raw_bound$schimra_b_csam_copine_max  <- copine_max
+raw_bound$schimra_b_csam_copine_mean <- copine_mean
+
+## Age of Youngest Child
+
+csam_ayc_df <- raw_bound %>% 
+  select(starts_with("schimra_b_csam_ayc"))
+
+csam_ayc_df[csam_ayc_df == "_1"] <- "0" 
+
+csam_ayc_df <- csam_ayc_df %>% 
+  type_convert()
+
+### Weekly maximum
+
+ayc_min <- apply(csam_ayc_df, 1, min, na.rm = TRUE)
+ayc_min[ayc_min == Inf] <- NA
+
+### Weekly average
+
+ayc_mean <- rowMeans(csam_ayc_df, na.rm = TRUE)
+
+### Add to data
+
+raw_bound$schimra_b_csam_age_min  <- ayc_min
+raw_bound$schimra_b_csam_age_mean <- ayc_mean
+
+# Socializing 
+
+# Socializing is measured in hours and minutes, and to analyze this variable as
+# hours, these measures will need to be transformed and combined.
+
+## Time spent
+
+socializing_df <- raw_bound %>% 
+  select(starts_with("schimra_b_socialize_day"))
+
+socializing_df[socializing_df == "_1"] <- "0" # Change "less than 1" to 0
+
+socializing_hours   <- socializing_df %>% 
+  select(ends_with("hours")) %>% 
+  map_df(as.numeric)
+
+sociailizing_minutes <- socializing_df %>% 
+  select(ends_with("minutes")) %>% 
+  map_df(as.numeric)
+
+sociailizing_minutes <- sociailizing_minutes/60
+
+socializing_hours <- socializing_hours + sociailizing_minutes
+
+### Add sum of hours to main data object and calculate daily average
+
+raw_bound$schimra_b_social_hours_sum <- 
+  rowSums(socializing_hours, na.rm = TRUE)
+
+raw_bound <- raw_bound %>% 
+  mutate(
+    schimra_b_social_hours_sum = case_when(
+      timepoint == "pre_1" ~ NA,
+      timepoint != "pre_1" ~ schimra_b_social_hours_sum
+    )
+  )
+
+raw_bound$schimra_b_social_hours_avg <- 
+  raw_bound$schimra_b_social_hours_sum/7
+
+## Age of Youngest Child
+
+social_ayc_df <- raw_bound %>% 
+  select(starts_with("schimra_b_socialize_ayc_day"))
+
+social_ayc_df[csam_ayc_df == "_1"] <- "0" 
+
+social_ayc_df <- social_ayc_df %>% 
+  type_convert()
+
+### Weekly maximum
+
+ayc_soc_min <- apply(social_ayc_df, 1, min, na.rm = TRUE)
+ayc_soc_min[ayc_soc_min == Inf] <- NA
+
+### Weekly average
+
+ayc_soc_mean <- rowMeans(social_ayc_df, na.rm = TRUE)
+
+### Add to data
+
+raw_bound$schimra_b_social_age_min  <- ayc_soc_min
+raw_bound$schimra_b_social_age_mean <- ayc_soc_mean
+
+# Interacting 
+
+# Interacting is measured in hours and minutes, and to analyze this variable as
+# hours, these measures will need to be transformed and combined.
+
+## Time spent
+
+interacting_df <- raw_bound %>% 
+  select(starts_with("schimra_b_interact_day"))
+
+interacting_df[interacting_df == "_1"] <- "0" # Change "less than 1" to 0
+
+interacting_hours   <- interacting_df %>% 
+  select(ends_with("hours")) %>% 
+  map_df(as.numeric)
+
+sociailizing_minutes <- interacting_df %>% 
+  select(ends_with("minutes")) %>% 
+  map_df(as.numeric)
+
+sociailizing_minutes <- sociailizing_minutes/60
+
+interacting_hours <- interacting_hours + sociailizing_minutes
+
+### Add sum of hours to main data object and calculate daily average
+
+raw_bound$schimra_b_interact_hours_sum <- 
+  rowSums(interacting_hours, na.rm = TRUE)
+
+raw_bound <- raw_bound %>% 
+  mutate(
+    schimra_b_interact_hours_sum = case_when(
+      timepoint == "pre_1" ~ NA,
+      timepoint != "pre_1" ~ schimra_b_interact_hours_sum
+    )
+  )
+
+raw_bound$schimra_b_interact_hours_avg <- 
+  raw_bound$schimra_b_interact_hours_sum/7
+
+## Age of Youngest Child
+
+interact_ayc_df <- raw_bound %>% 
+  select(starts_with("schimra_b_interact_ayc_day"))
+
+interact_ayc_df[interact_ayc_df == "_1"] <- "0" 
+
+interact_ayc_df <- interact_ayc_df %>% 
+  type_convert()
+
+### Weekly maximum
+
+ayc_soc_min <- apply(interact_ayc_df, 1, min, na.rm = TRUE)
+ayc_soc_min[ayc_soc_min == Inf] <- NA
+
+### Weekly average
+
+ayc_soc_mean <- rowMeans(interact_ayc_df, na.rm = TRUE)
+
+### Add to data
+
+raw_bound$schimra_b_interact_age_min  <- ayc_soc_min
+raw_bound$schimra_b_interact_age_mean <- ayc_soc_mean
+
+# Other behaviors 
+
+# Other problematic behaviors are measured in hours and minutes, and to analyze
+# this variable as hours, these measures will need to be transformed and
+# combined.
+
+## Time spent
+
+other_df <- raw_bound %>% 
+  select(starts_with("schimra_b_other_day"))
+
+other_df[other_df == "_1"] <- "0" # Change "less than 1" to 0
+
+other_hours   <- other_df %>% 
+  select(ends_with("hours")) %>% 
+  map_df(as.numeric)
+
+sociailizing_minutes <- other_df %>% 
+  select(ends_with("minutes")) %>% 
+  map_df(as.numeric)
+
+sociailizing_minutes <- sociailizing_minutes/60
+
+other_hours <- other_hours + sociailizing_minutes
+
+### Add sum of hours to main data object and calculate daily average
+
+raw_bound$schimra_b_other_hours_sum <- 
+  rowSums(other_hours, na.rm = TRUE)
+
+raw_bound <- raw_bound %>% 
+  mutate(
+    schimra_b_other_hours_sum = case_when(
+      timepoint == "pre_1" ~ NA,
+      timepoint != "pre_1" ~ schimra_b_other_hours_sum
+    )
+  )
+
+raw_bound$schimra_b_other_hours_avg <- 
+  raw_bound$schimra_b_other_hours_sum/7
+
+## Age of Youngest Child
+
+other_ayc_df <- raw_bound %>% 
+  select(starts_with("schimra_b_other_ayc_day"))
+
+other_ayc_df[other_ayc_df == "_1"] <- "0" 
+
+other_ayc_df <- other_ayc_df %>% 
+  type_convert()
+
+### Weekly maximum
+
+ayc_soc_min <- apply(other_ayc_df, 1, min, na.rm = TRUE)
+ayc_soc_min[ayc_soc_min == Inf] <- NA
+
+### Weekly average
+
+ayc_soc_mean <- rowMeans(other_ayc_df, na.rm = TRUE)
+
+### Add to data
+
+raw_bound$schimra_b_other_age_min  <- ayc_soc_min
+raw_bound$schimra_b_other_age_mean <- ayc_soc_mean
 
 # Data for analysis and export -------------------------------------------------
 

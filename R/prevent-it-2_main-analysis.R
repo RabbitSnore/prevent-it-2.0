@@ -117,7 +117,7 @@ ssas_time_arm <- gpp_data_main %>%
   summarise(
     mean_ssas = mean(ssas_sumscore, na.rm = TRUE),
     sd_ssas   = sd(ssas_sumscore, na.rm = TRUE),
-    se_ssas   = sd_ssas/n(),
+    se_ssas   = sd_ssas/sqrt(n()),
     ci_lb     = mean_ssas - se_ssas*qnorm(.975),
     ci_ub     = mean_ssas + se_ssas*qnorm(.975),
     n         = n()
@@ -141,7 +141,7 @@ ggplot(ssas_time_arm,
     width = .33
   ) +
   scale_x_continuous(
-    breaks = 0:max(ssas_time_arm$time)
+    breaks = 0:max(ssas_time_arm$time, na.rm = TRUE)
   ) +
   scale_y_continuous(
     breaks = 0:48
@@ -152,6 +152,125 @@ ggplot(ssas_time_arm,
     color = "Group"
   ) +
   theme_classic()
+
+plot_ssas_time_arm <- 
+ggplot(ssas_time_arm %>% 
+         filter(n > 10),
+       aes(
+         x     = time, 
+         y     = mean_ssas,
+         ymax  = ci_ub,
+         ymin  = ci_lb,
+         group = assigned_group
+       )) +
+  facet_wrap(~ assigned_group,
+             nrow = 2) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_errorbar(
+    linewidth = 1,
+    width = .33
+  ) +
+  scale_x_continuous(
+    breaks = 0:max(ssas_time_arm$time, na.rm = TRUE)
+  ) +
+  scale_y_continuous(
+    breaks = 0:48
+  ) +
+  geom_line(
+    alpha     = .20,
+    linewidth = 1,
+    data = gpp_data_main,
+    inherit.aes = FALSE,
+    aes(
+      x = time,
+      y = ssas_sumscore,
+      group = id,
+      color = as.factor(treatment)
+    )
+  ) +
+  labs(
+    x = "Time",
+    y = "Mean SSAS Score",
+    color = "Group"
+  ) +
+  theme_classic()
+
+## Predicted SSAS values
+
+### Create new data for predictions
+
+pred_df_ssas <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq       = time^2,
+    time_after_sq = time_after^2
+  )
+
+### Predictions from retained model
+
+predict_df_ssas <- as.data.frame(
+  predict(lmm_ssas_quad, 
+          newdata = pred_df_ssas,
+          re.form = NA, 
+          se.fit  = TRUE)
+  )
+
+pred_df_ssas <- bind_cols(pred_df_ssas, predict_df_ssas)
+
+pred_df_ssas <- pred_df_ssas %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+### Visualization of predicted values
+
+plot_ssas_predict <- 
+ggplot(pred_df_ssas,
+       aes(
+         y     = fit,
+         x     = time,
+         color = group
+       )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 48, 6),
+    limits = c(0, 48)
+  ) +
+  scale_x_continuous(
+    breaks = 0:10
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted SSAS Sum Score",
+    color = "Group"
+  ) +
+  theme_classic()
+
 
 # Sensitivity analyses/Robustness checks
 
@@ -172,8 +291,9 @@ ggplot(ssas_time_arm,
 # exploration of the data. For now, "ADDITIONAL_PREDICTORS" is included in the
 # model formula as a placeholder.
 
-# Time points 10, 11, and 12 will be missing by design, so they will treated as
-# missing in the variable indicating (unplanned) missingness.
+# Time points between the end of the waitlist period and the beginning of
+# treatment will be missing by design, so they will treated as missing in the
+# variable indicating (planned) missingness.
 
 miss_ssas              <- glmer(ssas_missing 
                                 ~ 1 
@@ -274,7 +394,7 @@ csam_time_arm <- gpp_data_active_csam %>%
   summarise(
     mean_csam = mean(schimra_b_csam_hours_avg, na.rm = TRUE),
     sd_csam   = sd(schimra_b_csam_hours_avg, na.rm = TRUE),
-    se_csam   = sd_csam/n(),
+    se_csam   = sd_csam/sqrt(n()),
     ci_lb     = mean_csam - se_csam*qnorm(.975),
     ci_ub     = mean_csam + se_csam*qnorm(.975),
     n         = n()
@@ -307,6 +427,84 @@ ggplot(csam_time_arm,
   ) +
   theme_classic()
 
+
+## Predicted CSAM use values
+
+### Create new data for predictions
+
+pred_df_csam <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq       = time^2,
+    time_after_sq = time_after^2
+  )
+
+### Predictions from retained model
+
+predict_df_csam <- as.data.frame(
+  predict(lmm_csam_hours_quad, 
+          newdata = pred_df_csam,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_csam <- bind_cols(pred_df_csam, predict_df_csam)
+
+pred_df_csam <- pred_df_csam %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+### Visualization of predicted values
+
+ggplot(pred_df_csam,
+       aes(
+         y     = fit,
+         x     = time,
+         color = group
+       )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 1.5, .25),
+    limits = c(-.25, 1.5)
+  ) +
+  scale_x_continuous(
+    breaks = 0:9
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dotted"
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted Daily Average CSAM Use",
+    color = "Group"
+  ) +
+  theme_classic()
+
 ##### Hours (daily average) -- All participants
 
 lmm_csam_hours_all_linear  <- lmer(schimra_b_csam_hours_avg 
@@ -330,6 +528,121 @@ lmm_csam_hours_all_quad    <- lmer(schimra_b_csam_hours_avg
 lrt_csam_hours_all         <- anova(lmm_csam_hours_all_linear, 
                                     lmm_csam_hours_all_quad, 
                                     test = "LRT")
+
+csam_time_arm_all <- gpp_data_main %>% 
+  group_by(assigned_group, time) %>% 
+  summarise(
+    mean_csam = mean(schimra_b_csam_hours_avg, na.rm = TRUE),
+    sd_csam   = sd(schimra_b_csam_hours_avg, na.rm = TRUE),
+    se_csam   = sd_csam/sqrt(n()),
+    ci_lb     = mean_csam - se_csam*qnorm(.975),
+    ci_ub     = mean_csam + se_csam*qnorm(.975),
+    n         = n()
+  )
+
+plot_csam_time_all <- 
+  ggplot(csam_time_arm_all,
+         aes(
+           x     = time, 
+           y     = mean_csam,
+           ymax  = ci_ub,
+           ymin  = ci_lb,
+           group = assigned_group,
+           color = assigned_group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_errorbar(
+    linewidth = 1,
+    width = .33
+  ) +
+  scale_x_continuous(
+    breaks = 0:max(csam_time_arm$time)
+  ) +
+  labs(
+    x = "Time",
+    y = "Daily Average CSAM Use",
+    color = "Group"
+  ) +
+  theme_classic()
+
+## Predicted CSAM use values
+
+### Create new data for predictions
+
+pred_df_csam_all <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq       = time^2,
+    time_after_sq = time_after^2
+  )
+
+### Predictions from retained model
+
+predict_df_csam_all <- as.data.frame(
+  predict(lmm_csam_hours_all_quad, 
+          newdata = pred_df_csam_all,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_csam_all <- bind_cols(pred_df_csam_all, predict_df_csam_all)
+
+pred_df_csam_all <- pred_df_csam_all %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+### Visualization of predicted values
+
+ggplot(pred_df_csam_all,
+       aes(
+         y     = fit,
+         x     = time,
+         color = group
+       )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 1.5, .25),
+    limits = c(-.25, 1.5)
+  ) +
+  scale_x_continuous(
+    breaks = 0:9
+  ) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dotted"
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted Daily Average CSAM Use",
+    color = "Group"
+  ) +
+  theme_classic()
 
 ##### COPINE severity
 
