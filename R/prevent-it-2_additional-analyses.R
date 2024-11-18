@@ -655,6 +655,7 @@ hbi_19_summary <- gpp_data_main %>%
 hbi_19_summary$treat_prepost <- factor(hbi_19_summary$treat_prepost,
                                        levels = c(1, 0))
 
+plot_hbi_19_means <- 
 ggplot(hbi_19_summary,
        aes(
          y     = mean_hbi_19,
@@ -699,9 +700,10 @@ ggplot(hbi_19_summary,
 
 # Model predictions
 
-predict_motive_grid <- plot_grid(plot_motivewatch_predict ,
-                                 plot_motivesocial_predict ,
-                                 plot_motiveinteract_predict ,
+predict_motive_grid <- plot_grid(plot_motivewatch_predict,
+                                 plot_motivesocial_predict,
+                                 plot_motiveinteract_predict,
+                                 plot_hbi_19_means,
                                  nrow = 2)
 
 save_plot("figures/gpp_schimra-a-prediction.png",
