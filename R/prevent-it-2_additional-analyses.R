@@ -49,30 +49,378 @@ lmm_watch_motive_quad      <- lmer(schimra_a_watch
                                    + treatment 
                                    + time 
                                    + time_after 
-                                   + time_sq 
-                                   + time_after_sq 
+                                   + time_sq
                                    + (1|id), 
                                    data = gpp_data_main)
 
+lmm_watch_motive_quad_2      <- lmer(schimra_a_watch 
+                                     ~ 1 
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + time_sq 
+                                     + time_after_sq 
+                                     + (1|id), 
+                                     data = gpp_data_main)
+
 lrt_watch_motive           <- anova(lmm_csam_hours_linear, 
                                     lmm_csam_hours_quad, 
+                                    lmm_csam_hours_quad_2, 
                                     test = "LRT")
+
+## Create new data for predictions
+
+pred_df_motivewatch <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq = time^2
+  )
+
+## Predictions from retained model
+
+predict_df_motivewatch <- as.data.frame(
+  predict(lmm_watch_motive_quad, 
+          newdata = pred_df_motivewatch,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_motivewatch <- bind_cols(pred_df_motivewatch, predict_df_motivewatch)
+
+pred_df_motivewatch <- pred_df_motivewatch %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+## Visualization of predicted values
+
+plot_motivewatch_predict <- 
+  ggplot(pred_df_motivewatch,
+         aes(
+           y     = fit,
+           x     = time,
+           color = group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = 0:10,
+    limits = c(0, 10)
+  ) +
+  scale_x_continuous(
+    breaks = 0:9
+  ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted Motvation to Watch CSAM",
+    color = "Group"
+  ) +
+  theme_classic()
+
+## Effect size calculation
+
+contrast_motivewatch   <- predictions(lmm_watch_motive_quad,
+                                      newdata    = pred_df_motivewatch %>% 
+                                        filter(time == 9),
+                                      hypothesis = "pairwise",
+                                      re.form    = NA)
+
+contrast_motivewatch_d <- paste(
+  round(contrast_motivewatch$estimate / sigma(lmm_watch_motive_quad), 3),
+  " 95% CI [",
+  round(contrast_motivewatch$conf.low / sigma(lmm_watch_motive_quad), 3),
+  ", ",
+  round(contrast_motivewatch$conf.high / sigma(lmm_watch_motive_quad), 3),
+  "]",
+  sep = ""
+)
 
 # Socialize
 
-lmm_social_motive_linear   <- lmer(schimra_a_social ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_social_motive_linear    <- lmer(schimra_a_socialize 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after + (1|id), 
+                                   data = gpp_data_main)
 
-lmm_social_motive_quad     <- lmer(schimra_a_social ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lmm_social_motive_quad      <- lmer(schimra_a_socialize 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq
+                                   + (1|id), 
+                                   data = gpp_data_main)
 
-lrt_social_motive          <- anova(lmm_social_motive_linear, lmm_social_motive_quad, test = "LRT")
+lmm_social_motive_quad_2      <- lmer(schimra_a_socialize 
+                                     ~ 1 
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + time_sq 
+                                     + time_after_sq 
+                                     + (1|id), 
+                                     data = gpp_data_main)
+
+lrt_social_motive           <- anova(lmm_csam_hours_linear, 
+                                    lmm_csam_hours_quad, 
+                                    lmm_csam_hours_quad_2, 
+                                    test = "LRT")
+
+## Create new data for predictions
+
+pred_df_motivesocial <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq = time^2
+  )
+
+## Predictions from retained model
+
+predict_df_motivesocial <- as.data.frame(
+  predict(lmm_social_motive_quad, 
+          newdata = pred_df_motivesocial,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_motivesocial <- bind_cols(pred_df_motivesocial, predict_df_motivesocial)
+
+pred_df_motivesocial <- pred_df_motivesocial %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+## Visualization of predicted values
+
+plot_motivesocial_predict <- 
+  ggplot(pred_df_motivesocial,
+         aes(
+           y     = fit,
+           x     = time,
+           color = group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = 0:10,
+    limits = c(0, 10)
+  ) +
+  scale_x_continuous(
+    breaks = 0:9
+  ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted Motvation to Socialize with Children",
+    color = "Group"
+  ) +
+  theme_classic()
+
+## Effect size calculation
+
+contrast_motivesocial   <- predictions(lmm_social_motive_quad,
+                                      newdata    = pred_df_motivesocial %>% 
+                                        filter(time == 9),
+                                      hypothesis = "pairwise",
+                                      re.form    = NA)
+
+contrast_motivesocial_d <- paste(
+  round(contrast_motivesocial$estimate / sigma(lmm_social_motive_quad), 3),
+  " 95% CI [",
+  round(contrast_motivesocial$conf.low / sigma(lmm_social_motive_quad), 3),
+  ", ",
+  round(contrast_motivesocial$conf.high / sigma(lmm_social_motive_quad), 3),
+  "]",
+  sep = ""
+)
 
 # Interact
 
-lmm_interact_motive_linear <- lmer(schimra_a_interact ~ treatment + time + time_after + (1|id), data = pi_data_long)
+lmm_interact_motive_linear    <- lmer(schimra_a_interact 
+                                      ~ 1 
+                                      + treatment 
+                                      + time 
+                                      + time_after + (1|id), 
+                                      data = gpp_data_main)
 
-lmm_interact_motive_quad   <- lmer(schimra_a_interact ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+lmm_interact_motive_quad      <- lmer(schimra_a_interact 
+                                      ~ 1 
+                                      + treatment 
+                                      + time 
+                                      + time_after 
+                                      + time_sq
+                                      + (1|id), 
+                                      data = gpp_data_main)
 
-lrt_interact_motive        <- anova(lmm_interact_motive_linear, lmm_interact_motive_quad, test = "LRT")
+lmm_interact_motive_quad_2      <- lmer(schimra_a_interact 
+                                        ~ 1 
+                                        + treatment 
+                                        + time 
+                                        + time_after 
+                                        + time_sq 
+                                        + time_after_sq 
+                                        + (1|id), 
+                                        data = gpp_data_main)
+
+lrt_interact_motive           <- anova(lmm_csam_hours_linear, 
+                                       lmm_csam_hours_quad, 
+                                       lmm_csam_hours_quad_2, 
+                                       test = "LRT")
+
+## Create new data for predictions
+
+pred_df_motiveinteract <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq = time^2
+  )
+
+## Predictions from retained model
+
+predict_df_motiveinteract <- as.data.frame(
+  predict(lmm_interact_motive_quad, 
+          newdata = pred_df_motiveinteract,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_motiveinteract <- bind_cols(pred_df_motiveinteract, predict_df_motiveinteract)
+
+pred_df_motiveinteract <- pred_df_motiveinteract %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+## Visualization of predicted values
+
+plot_motiveinteract_predict <- 
+  ggplot(pred_df_motiveinteract,
+         aes(
+           y     = fit,
+           x     = time,
+           color = group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = 0:10,
+    limits = c(0, 10)
+  ) +
+  scale_x_continuous(
+    breaks = 0:9
+  ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted Motvation to Interact with Children",
+    color = "Group"
+  ) +
+  theme_classic()
+
+## Effect size calculation
+
+contrast_motiveinteract   <- predictions(lmm_interact_motive_quad,
+                                       newdata    = pred_df_motiveinteract %>% 
+                                         filter(time == 9),
+                                       hypothesis = "pairwise",
+                                       re.form    = NA)
+
+contrast_motiveinteract_d <- paste(
+  round(contrast_motiveinteract$estimate / sigma(lmm_interact_motive_quad), 3),
+  " 95% CI [",
+  round(contrast_motiveinteract$conf.low / sigma(lmm_interact_motive_quad), 3),
+  ", ",
+  round(contrast_motiveinteract$conf.high / sigma(lmm_interact_motive_quad), 3),
+  "]",
+  sep = ""
+)
 
 ### To what extent does the treatment produce sustainable changes in sexual urges (follow-up measure)?
 
@@ -171,9 +519,23 @@ attrition_rate_chisq <- prop.test(x = c(att_rate_pi2, att_rate_pi1),
 
 #### Effect of treatment
 
-lmm_eq5d_main <- lmer(eq5d_vas ~ treatment + measurement + (1|id), data = pi_data_eq5d)
-lmm_eq5d_int  <- lmer(eq5d_vas ~ treatment * measurement + (1|id), data = pi_data_eq5d)
-lrt_eq5d      <- anova(lmm_eq5d_main, lmm_eq5d_int, test = "LRT")
+lmm_eq5d_main <- lmer(eq5d_vas 
+                      ~ 1 
+                      + treat_prepost 
+                      + pre_post 
+                      + (1|id), 
+                      data = gpp_data_main)
+
+lmm_eq5d_int  <- lmer(eq5d_vas 
+                      ~ 1 
+                      + treat_prepost 
+                      * pre_post 
+                      + (1|id), 
+                      data = gpp_data_main)
+
+lrt_eq5d      <- anova(lmm_eq5d_main, 
+                       lmm_eq5d_int, 
+                       test = "LRT")
 
 #### Sustained change
 
@@ -253,4 +615,97 @@ lrt_p1p2_other_hours            <- anova(lmm_p1p2_other_hours_main, lmm_p1p2_oth
 lmm_p1p2_other_age_main       <- lmer(schimra_b_other_age_min ~ treatment + measurement + (1|id), data = pi1_pi2_data_long)
 lmm_p1p2_other_age_int         <- lmer(schimra_b_other_age_min ~ treatment * measurement + (1|id), data = pi1_pi2_data_long)
 lrt_p1p2_other_age              <- anova(lmm_p1p2_other_age_main, lmm_p1p2_other_age_int, test = "LRT")
+
+# Post Hoc Analyses ------------------------------------------------------------
+
+# HBI-19
+
+lmm_hbi_19_main <- lmer(hbi_19_sumscore
+                      ~ 1 
+                      + treat_prepost 
+                      + pre_post 
+                      + (1|id), 
+                      data = gpp_data_main)
+
+lmm_hbi_19_int  <- lmer(hbi_19_sumscore 
+                      ~ 1 
+                      + treat_prepost 
+                      * pre_post 
+                      + (1|id), 
+                      data = gpp_data_main)
+
+lrt_hbi_19      <- anova(lmm_hbi_19_main, 
+                       lmm_hbi_19_int, 
+                       test = "LRT")
+
+## Visualization
+
+hbi_19_summary <- gpp_data_main %>% 
+  group_by(treat_prepost, pre_post) %>% 
+  summarise(
+    mean_hbi_19 = mean(hbi_19_sumscore, na.rm = TRUE),
+    sd_hbi_19   = sd(hbi_19_sumscore, na.rm = TRUE),
+    se_hbi_19   = sd_hbi_19/sqrt(n()),
+    ci_lb     = mean_hbi_19 - se_hbi_19*qnorm(.975),
+    ci_ub     = mean_hbi_19 + se_hbi_19*qnorm(.975),
+    n         = n()
+  ) %>% 
+  filter(!is.na(treat_prepost))
+
+hbi_19_summary$treat_prepost <- factor(hbi_19_summary$treat_prepost,
+                                       levels = c(1, 0))
+
+ggplot(hbi_19_summary,
+       aes(
+         y     = mean_hbi_19,
+         x     = as.factor(pre_post),
+         color = treat_prepost,
+         group = treat_prepost,
+         ymax  = ci_ub,
+         ymin  = ci_lb
+       )) + 
+  geom_point(
+    size = 1
+  ) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_errorbar(
+    width     = .33,
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  scale_x_discrete(
+    labels = c("Pre", "Post")
+  ) +
+  scale_y_continuous(
+    limits = c(5, 95),
+    breaks = seq(5, 95, 10)
+  ) +
+  labs(
+    x     = "Time",
+    y     = "Mean hypersexuality (HBI-19 total score)",
+    color = "Group"
+  ) +
+  theme_classic()
+
+# Visualization export ---------------------------------------------------------
+
+# Model predictions
+
+predict_motive_grid <- plot_grid(plot_motivewatch_predict ,
+                                 plot_motivesocial_predict ,
+                                 plot_motiveinteract_predict ,
+                                 nrow = 2)
+
+save_plot("figures/gpp_schimra-a-prediction.png",
+          predict_motive_grid,
+          base_width = 10, base_height = 8)
+
 

@@ -3502,6 +3502,21 @@ ayc_soc_mean <- rowMeans(other_ayc_df, na.rm = TRUE)
 raw_bound$schimra_b_other_age_min  <- ayc_soc_min
 raw_bound$schimra_b_other_age_mean <- ayc_soc_mean
 
+# Calculate HBI-19 scores ------------------------------------------------------
+
+# HBI-19 total score
+
+# Create temporary subset of only SSAS data
+
+hbi_19_df <- raw_bound %>% 
+  select(starts_with("hbi_19_"))
+
+hbi_19_df <- map_df(hbi_19_df, as.numeric)
+
+# Calculate total scores
+
+raw_bound$hbi_19_sumscore  <- rowSums(hbi_19_df)
+
 # Pre-Post indicator -----------------------------------------------------------
 
 # For analyses of variables only measured at the pre and post timepoints, it is
@@ -3511,19 +3526,21 @@ raw_bound$schimra_b_other_age_mean <- ayc_soc_mean
 raw_bound <- raw_bound %>% 
   mutate(
     pre_post = case_when(
-      timepoint == "pre_1"                         ~ 0,
-      timepoint == "pre_2"                         ~ 0,
-      timepoint == "post" | timepoint == "post_wl" ~ 1,
-      timepoint == "weekly"                        ~ NA
+      timepoint == "pre_1"             ~ 0,
+      timepoint == "pre_2" & time == 0 ~ 0,
+      timepoint == "pre_2" & time != 0 ~ 0,
+      timepoint == "post"              ~ 1,
+      timepoint == "weekly"            ~ NA
     ),
     treat_prepost = case_when(
-      assigned_group == "cbt"      & timepoint == "pre_1"   ~ 1,
-      assigned_group == "cbt"      & timepoint == "pre_2"   ~ 1,
-      assigned_group == "cbt"      & timepoint == "post"    ~ 1,
-      assigned_group == "waitlist" & timepoint == "pre_1"   ~ 0,
-      assigned_group == "waitlist" & timepoint == "pre_2"   ~ 0,
-      assigned_group == "waitlist" & timepoint == "post_wl" ~ 0,
-      assigned_group == "waitlist" & timepoint == "post"    ~ 1,
+      assigned_group == "cbt"      & timepoint == "pre_1"                  ~ 1,
+      assigned_group == "cbt"      & timepoint == "pre_2"                  ~ 1,
+      assigned_group == "cbt"      & timepoint == "post"                   ~ 1,
+      assigned_group == "waitlist" & timepoint == "pre_1"                  ~ 0,
+      assigned_group == "waitlist" & timepoint == "pre_2" & time == 0      ~ 0,
+      assigned_group == "waitlist" & timepoint == "pre_2" & time != 0      ~ 1,
+      assigned_group == "waitlist" & timepoint == "post"  & treatment == 0 ~ 0,
+      assigned_group == "waitlist" & timepoint == "post"  & treatment == 1 ~ 1
     )
   ) %>% 
   relocate(

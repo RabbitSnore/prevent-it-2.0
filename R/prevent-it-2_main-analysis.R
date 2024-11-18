@@ -121,6 +121,15 @@ lmm_ssas_quad        <- lmer(ssas_sumscore
                              + treatment 
                              + time 
                              + time_after 
+                             + time_sq
+                             + (1|id), 
+                             data = gpp_data_main)
+
+lmm_ssas_quad_2      <- lmer(ssas_sumscore 
+                             ~ 1 
+                             + treatment 
+                             + time 
+                             + time_after 
                              + time_sq 
                              + time_after_sq 
                              + (1|id), 
@@ -128,6 +137,7 @@ lmm_ssas_quad        <- lmer(ssas_sumscore
 
 lrt_ssas             <- anova(lmm_ssas_linear, 
                               lmm_ssas_quad, 
+                              lmm_ssas_quad_2, 
                               test = "LRT")
 
 ## Visualization of mean SSAS scores
@@ -306,7 +316,7 @@ contrast_ssas   <- predictions(lmm_ssas_quad,
                                hypothesis = "pairwise",
                                re.form    = NA)
 
-constrast_ssas_d <- paste(
+contrast_ssas_d <- paste(
   round(contrast_ssas$estimate / sigma(lmm_ssas_quad), 3),
   " 95% CI [",
   round(contrast_ssas$conf.low / sigma(lmm_ssas_quad), 3),
@@ -458,6 +468,15 @@ lmm_csam_hours_quad        <- lmer(schimra_b_csam_hours_avg
                                    + treatment 
                                    + time 
                                    + time_after 
+                                   + time_sq
+                                   + (1|id), 
+                                   data = gpp_data_active_csam)
+
+lmm_csam_hours_quad_2      <- lmer(schimra_b_csam_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
                                    + time_sq 
                                    + time_after_sq 
                                    + (1|id), 
@@ -465,6 +484,7 @@ lmm_csam_hours_quad        <- lmer(schimra_b_csam_hours_avg
 
 lrt_csam_hours             <- anova(lmm_csam_hours_linear, 
                                     lmm_csam_hours_quad, 
+                                    lmm_csam_hours_quad_2, 
                                     test = "LRT")
 
 ###### Visualization of daily average CSAM use
@@ -601,6 +621,15 @@ lmm_csam_hours_all_quad    <- lmer(schimra_b_csam_hours_avg
                                    + treatment 
                                    + time 
                                    + time_after 
+                                   + time_sq
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_csam_hours_all_quad_2  <- lmer(schimra_b_csam_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
                                    + time_sq 
                                    + time_after_sq 
                                    + (1|id), 
@@ -608,9 +637,11 @@ lmm_csam_hours_all_quad    <- lmer(schimra_b_csam_hours_avg
 
 lrt_csam_hours_all         <- anova(lmm_csam_hours_all_linear, 
                                     lmm_csam_hours_all_quad, 
+                                    lmm_csam_hours_all_quad_2,
                                     test = "LRT")
 
 csam_time_arm_all <- gpp_data_main %>% 
+  filter(!is.na(time)) %>% 
   group_by(assigned_group, time) %>% 
   summarise(
     mean_csam = mean(schimra_b_csam_hours_avg, na.rm = TRUE),
@@ -741,7 +772,7 @@ contrast_csam   <- predictions(lmm_csam_hours_all_quad,
                                hypothesis = "pairwise",
                                re.form    = NA)
 
-constrast_csam_d <- paste(
+contrast_csam_d <- paste(
   round(contrast_csam$estimate / sigma(lmm_csam_hours_all_quad), 3),
   " 95% CI [",
   round(contrast_csam$conf.low / sigma(lmm_csam_hours_all_quad), 3),
@@ -766,13 +797,23 @@ lmm_csam_copine_quad       <- lmer(schimra_b_csam_copine_max
                                    + treatment 
                                    + time 
                                    + time_after 
-                                   + time_sq 
-                                   + time_after_sq 
+                                   + time_sq
                                    + (1|id), 
                                    data = gpp_data_main)
 
+lmm_csam_copine_quad_2       <- lmer(schimra_b_csam_copine_max
+                                     ~ 1 
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + time_sq 
+                                     + time_after_sq 
+                                     + (1|id), 
+                                     data = gpp_data_main)
+
 lrt_csam_copine            <- anova(lmm_csam_copine_linear, 
                                     lmm_csam_copine_quad, 
+                                    lmm_csam_copine_quad_2, 
                                     test = "LRT")
 
 ## Predicted COPINE severity value
@@ -860,7 +901,7 @@ contrast_copine   <- predictions(lmm_csam_copine_linear,
                                hypothesis = "pairwise",
                                re.form    = NA)
 
-constrast_copine_d <- paste(
+contrast_copine_d <- paste(
   round(contrast_copine$estimate / sigma(lmm_csam_copine_linear), 3),
   " 95% CI [",
   round(contrast_copine$conf.low / sigma(lmm_csam_copine_linear), 3),
@@ -885,15 +926,24 @@ lmm_csam_age_quad          <- lmer(schimra_b_csam_age_min
                                    + treatment 
                                    + time 
                                    + time_after 
-                                   + time_sq 
-                                   + time_after_sq 
+                                   + time_sq
                                    + (1|id), 
                                    data = gpp_data_main)
 
+lmm_csam_age_quad_2          <- lmer(schimra_b_csam_age_min 
+                                     ~ 1 
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + time_sq 
+                                     + time_after_sq 
+                                     + (1|id), 
+                                     data = gpp_data_main)
+
 lrt_csam_age               <- anova(lmm_csam_age_linear, 
                                     lmm_csam_age_quad, 
+                                    lmm_csam_age_quad_2, 
                                     test = "LRT")
-
 
 ### Create new data for predictions
 
@@ -902,12 +952,15 @@ pred_df_age <- data.frame(
   treatment  = c(0, rep(1, 9) , rep(0, 10)),
   time       = c(0:9, 0:9),
   time_after = c(0, 1:9, rep(0, 10))
-)
+) %>% 
+  mutate(
+    time_sq = time^2
+  )
 
 ### Predictions from retained model
 
 predict_df_age <- as.data.frame(
-  predict(lmm_csam_age_linear, 
+  predict(lmm_csam_age_quad, 
           newdata = pred_df_age,
           re.form = NA, 
           se.fit  = TRUE)
@@ -972,22 +1025,21 @@ plot_age_predict <-
 
 # Effect size calculation
 
-contrast_age   <- predictions(lmm_csam_age_linear,
+contrast_age   <- predictions(lmm_csam_age_quad,
                                  newdata    = pred_df_age %>% 
                                    filter(time == 9),
                                  hypothesis = "pairwise",
                                  re.form    = NA)
 
-constrast_age_d <- paste(
-  round(contrast_age$estimate / sigma(lmm_csam_age_linear), 3),
+contrast_age_d <- paste(
+  round(contrast_age$estimate / sigma(lmm_csam_age_quad), 3),
   " 95% CI [",
-  round(contrast_age$conf.low / sigma(lmm_csam_age_linear), 3),
+  round(contrast_age$conf.low / sigma(lmm_csam_age_quad), 3),
   ", ",
-  round(contrast_age$conf.high / sigma(lmm_csam_age_linear), 3),
+  round(contrast_age$conf.high / sigma(lmm_csam_age_quad), 3),
   "]",
   sep = ""
 )
-
 
 #### Socialization
 
@@ -1007,17 +1059,27 @@ lmm_social_hours_quad      <- lmer(schimra_b_social_hours_avg
                                    + time 
                                    + time_after 
                                    + time_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_social_hours_quad_2    <- lmer(schimra_b_social_hours_avg 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
                                    + time_after_sq 
                                    + (1|id), 
                                    data = gpp_data_main)
 
 lrt_social_hours           <- anova(lmm_social_hours_linear, 
                                     lmm_social_hours_quad, 
+                                    lmm_social_hours_quad_2, 
                                     test = "LRT")
 
 ##### Youngest age
 
-lmm_social_age_linear      <- lmer(schimra_b_social_age_min 
+lmm_social_age_linear    <- lmer(schimra_b_social_age_min 
                                    ~ 1
                                    + treatment 
                                    + time 
@@ -1025,7 +1087,16 @@ lmm_social_age_linear      <- lmer(schimra_b_social_age_min
                                    + (1|id), 
                                    data = gpp_data_main)
 
-lmm_social_age_quad        <- lmer(schimra_b_social_age_min 
+lmm_social_age_quad      <- lmer(schimra_b_social_age_min 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_social_age_quad_2    <- lmer(schimra_b_social_age_min 
                                    ~ 1 
                                    + treatment 
                                    + time 
@@ -1035,35 +1106,46 @@ lmm_social_age_quad        <- lmer(schimra_b_social_age_min
                                    + (1|id), 
                                    data = gpp_data_main)
 
-lrt_social_age             <- anova(lmm_social_age_linear, 
+lrt_social_age           <- anova(lmm_social_age_linear, 
                                     lmm_social_age_quad, 
+                                    lmm_social_age_quad_2, 
                                     test = "LRT")
 
 #### Sexual interactions
 
 ##### Hours (daily average)
 
-lmm_interact_hours_linear  <- lmer(schimra_b_interact_hours_avg 
-                                   ~ 1
-                                   + treatment 
-                                   + time 
-                                   + time_after 
-                                   + (1|id), 
-                                   data = gpp_data_main)
+lmm_interact_hours_linear    <- lmer(schimra_b_interact_hours_avg 
+                                     ~ 1
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + (1|id), 
+                                     data = gpp_data_main)
 
-lmm_interact_hours_quad    <- lmer(schimra_b_interact_hours_avg 
-                                   ~ 1 
-                                   + treatment 
-                                   + time 
-                                   + time_after 
-                                   + time_sq 
-                                   + time_after_sq 
-                                   + (1|id), 
-                                   data = gpp_data_main)
+lmm_interact_hours_quad      <- lmer(schimra_b_interact_hours_avg 
+                                     ~ 1 
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + time_sq 
+                                     + (1|id), 
+                                     data = gpp_data_main)
 
-lrt_interact_hours         <- anova(lmm_interact_hours_linear, 
-                                    lmm_interact_hours_quad, 
-                                    test = "LRT")
+lmm_interact_hours_quad_2    <- lmer(schimra_b_interact_hours_avg 
+                                     ~ 1 
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + time_sq 
+                                     + time_after_sq 
+                                     + (1|id), 
+                                     data = gpp_data_main)
+
+lrt_interact_hours           <- anova(lmm_interact_hours_linear, 
+                                      lmm_interact_hours_quad, 
+                                      lmm_interact_hours_quad_2, 
+                                      test = "LRT")
 
 ##### Youngest age
 
@@ -1081,63 +1163,93 @@ lmm_interact_age_quad      <- lmer(schimra_b_interact_age_min
                                    + time 
                                    + time_after 
                                    + time_sq 
-                                   + time_after_sq 
                                    + (1|id), 
                                    data = gpp_data_main)
 
+lmm_interact_age_quad_2      <- lmer(schimra_b_interact_age_min
+                                     ~ 1 
+                                     + treatment 
+                                     + time 
+                                     + time_after 
+                                     + time_sq 
+                                     + time_after_sq 
+                                     + (1|id), 
+                                     data = gpp_data_main)
+
 lrt_interact_age           <- anova(lmm_interact_age_linear, 
                                     lmm_interact_age_quad, 
+                                    lmm_interact_age_quad_2, 
                                     test = "LRT")
 
 #### Other behaviors
 
 ##### Hours (daily average)
 
-lmm_other_hours_linear     <- lmer(schimra_b_other_hours_avg 
-                                   ~ 1
-                                   + treatment 
-                                   + time 
-                                   + time_after 
-                                   + (1|id), 
-                                   data = gpp_data_main)
+lmm_other_hours_linear    <- lmer(schimra_b_other_hours_avg 
+                                  ~ 1
+                                  + treatment 
+                                  + time 
+                                  + time_after 
+                                  + (1|id), 
+                                  data = gpp_data_main)
 
-lmm_other_hours_quad       <- lmer(schimra_b_other_hours_avg 
-                                   ~ 1 
-                                   + treatment 
-                                   + time 
-                                   + time_after 
-                                   + time_sq 
-                                   + time_after_sq 
-                                   + (1|id), 
-                                   data = gpp_data_main)
+lmm_other_hours_quad      <- lmer(schimra_b_other_hours_avg 
+                                  ~ 1 
+                                  + treatment 
+                                  + time 
+                                  + time_after 
+                                  + time_sq 
+                                  + (1|id), 
+                                  data = gpp_data_main)
 
-lrt_other_hours            <- anova(lmm_other_hours_linear, 
-                                    lmm_other_hours_quad, 
-                                    test = "LRT")
+lmm_other_hours_quad_2    <- lmer(schimra_b_other_hours_avg 
+                                  ~ 1 
+                                  + treatment 
+                                  + time 
+                                  + time_after 
+                                  + time_sq 
+                                  + time_after_sq 
+                                  + (1|id), 
+                                  data = gpp_data_main)
+
+lrt_other_hours           <- anova(lmm_other_hours_linear, 
+                                   lmm_other_hours_quad, 
+                                   lmm_other_hours_quad_2, 
+                                   test = "LRT")
 
 ##### Youngest age
 
-lmm_other_age_linear       <- lmer(schimra_b_other_age_min 
-                                   ~ 1
-                                   + treatment 
-                                   + time 
-                                   + time_after 
-                                   + (1|id), 
-                                   data = gpp_data_main)
+lmm_other_age_linear    <- lmer(schimra_b_other_age_min 
+                                ~ 1
+                                + treatment 
+                                + time 
+                                + time_after 
+                                + (1|id), 
+                                data = gpp_data_main)
 
-lmm_other_age_quad         <- lmer(schimra_b_other_age_min 
-                                   ~ 1 
-                                   + treatment 
-                                   + time 
-                                   + time_after 
-                                   + time_sq 
-                                   + time_after_sq 
-                                   + (1|id), 
-                                   data = gpp_data_main)
+lmm_other_age_quad      <- lmer(schimra_b_other_age_min
+                                ~ 1 
+                                + treatment 
+                                + time 
+                                + time_after 
+                                + time_sq 
+                                + (1|id), 
+                                data = gpp_data_main)
 
-lrt_other_age              <- anova(lmm_other_age_linear, 
-                                    lmm_other_age_quad, 
-                                    test = "LRT")
+lmm_other_age_quad_2      <- lmer(schimra_b_other_age_min
+                                  ~ 1 
+                                  + treatment 
+                                  + time 
+                                  + time_after 
+                                  + time_sq 
+                                  + time_after_sq 
+                                  + (1|id), 
+                                  data = gpp_data_main)
+
+lrt_other_age           <- anova(lmm_other_age_linear, 
+                                 lmm_other_age_quad, 
+                                 lmm_other_age_quad_2, 
+                                 test = "LRT")
 
 # Visualization export ---------------------------------------------------------
 
@@ -1248,11 +1360,27 @@ lmm_table <- function(model,
 # Results tables
 
 table_ssas <- lmm_ssas_quad %>% 
-  lmm_table() %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)"
+    )
+  ) %>% 
   autofit()
   
 table_csam <- lmm_csam_hours_all_quad %>% 
-  lmm_table() %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)"
+    )
+  ) %>% 
   autofit()
   
 table_copine <- lmm_csam_copine_linear %>% 
@@ -1266,13 +1394,14 @@ table_copine <- lmm_csam_copine_linear %>%
   ) %>% 
   autofit()
   
-table_age <- lmm_csam_age_linear %>% 
+table_age <- lmm_csam_age_quad %>% 
   lmm_table(
     fixed_names = c(
       "Intercept",
       "Treatment start",
       "Time (weeks)",
-      "Time in treatment"
+      "Time in treatment",
+      "Time (quadratic)"
     )
   ) %>% 
   autofit()
