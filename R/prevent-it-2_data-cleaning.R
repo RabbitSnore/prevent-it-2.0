@@ -3105,6 +3105,11 @@ raw_bound <- raw_bound %>%
 
 source("R/prevent-it-2_masked.R")
 
+# Remove case from PRIORITY that was mistakenly marked as part of GPP
+
+raw_bound <- raw_bound %>% 
+  filter(study_code != case_priority)
+
 # Remove test cases
 
 raw_bound <- raw_bound %>% 
@@ -3244,6 +3249,8 @@ csam_watch_hours <- csam_watch_hours + csam_watch_minutes
 
 raw_bound$schimra_b_csam_hours_sum <- rowSums(csam_watch_hours, na.rm = TRUE)
 
+raw_bound$schimra_b_csam_hours_sum[is.na(raw_bound$schimra_b_csam)] <- NA
+
 raw_bound <- raw_bound %>% 
   mutate(
     schimra_b_csam_hours_sum = case_when(
@@ -3265,9 +3272,13 @@ csam_copine_df <- raw_bound %>%
 copine_max <- apply(csam_copine_df, 1, max, na.rm = TRUE)
 copine_max[copine_max == -Inf] <- NA
 
+copine_max[!is.na(raw_bound$schimra_b_csam) & is.na(copine_max)] <- 0
+
 ### Weekly average
 
 copine_mean <- rowMeans(csam_copine_df, na.rm = TRUE)
+
+copine_mean[!is.na(raw_bound$schimra_b_csam) & is.na(copine_mean)] <- 0
 
 ### Add to data
 
@@ -3343,7 +3354,7 @@ raw_bound$schimra_b_social_hours_avg <-
 social_ayc_df <- raw_bound %>% 
   select(starts_with("schimra_b_socialize_ayc_day"))
 
-social_ayc_df[csam_ayc_df == "_1"] <- "0" 
+social_ayc_df[social_ayc_df == "_1"] <- "0" 
 
 social_ayc_df <- social_ayc_df %>% 
   type_convert()
@@ -3490,6 +3501,35 @@ ayc_soc_mean <- rowMeans(other_ayc_df, na.rm = TRUE)
 
 raw_bound$schimra_b_other_age_min  <- ayc_soc_min
 raw_bound$schimra_b_other_age_mean <- ayc_soc_mean
+
+# Pre-Post indicator -----------------------------------------------------------
+
+# For analyses of variables only measured at the pre and post timepoints, it is
+# convenient to have an indicator for whether the measure has been taken pre or
+# post.
+
+raw_bound <- raw_bound %>% 
+  mutate(
+    pre_post = case_when(
+      timepoint == "pre_1"                         ~ 0,
+      timepoint == "pre_2"                         ~ 0,
+      timepoint == "post" | timepoint == "post_wl" ~ 1,
+      timepoint == "weekly"                        ~ NA
+    ),
+    treat_prepost = case_when(
+      assigned_group == "cbt"      & timepoint == "pre_1"   ~ 1,
+      assigned_group == "cbt"      & timepoint == "pre_2"   ~ 1,
+      assigned_group == "cbt"      & timepoint == "post"    ~ 1,
+      assigned_group == "waitlist" & timepoint == "pre_1"   ~ 0,
+      assigned_group == "waitlist" & timepoint == "pre_2"   ~ 0,
+      assigned_group == "waitlist" & timepoint == "post_wl" ~ 0,
+      assigned_group == "waitlist" & timepoint == "post"    ~ 1,
+    )
+  ) %>% 
+  relocate(
+    pre_post, treat_prepost,
+    .after = timepoint
+  )
 
 # Data for analysis and export -------------------------------------------------
 

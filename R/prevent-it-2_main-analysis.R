@@ -10,9 +10,29 @@
 
 packages <- c("lme4", 
               "lmerTest", 
-              "ggplot2")
+              "ggplot2",
+              "cowplot",
+              "flextable",
+              "marginaleffects",
+              "boot")
 
 lapply(packages, library, character.only = TRUE)
+
+# Functions --------------------------------------------------------------------
+
+post_prediction <- function(newdata) {
+  
+  function(x) {
+    
+    pred <- predict(x, 
+                    newdata = newdata, 
+                    re.form = NA)
+    
+    pred[[1]] - pred[[2]]
+    
+  }
+  
+}
 
 # Data analysis ----------------------------------------------------------------
 
@@ -106,7 +126,7 @@ lmm_ssas_quad        <- lmer(ssas_sumscore
                              + (1|id), 
                              data = gpp_data_main)
 
-lrt_sass             <- anova(lmm_ssas_linear, 
+lrt_ssas             <- anova(lmm_ssas_linear, 
                               lmm_ssas_quad, 
                               test = "LRT")
 
@@ -264,12 +284,57 @@ ggplot(pred_df_ssas,
   scale_x_continuous(
     breaks = 0:10
   ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
   labs(
     x     = "Time (Weeks)",
     y     = "Predicted SSAS Sum Score",
     color = "Group"
   ) +
   theme_classic()
+
+# Effect size calculation
+
+contrast_ssas   <- predictions(lmm_ssas_quad,
+                               newdata    = pred_df_ssas %>% 
+                                 filter(time == 9),
+                               hypothesis = "pairwise",
+                               re.form    = NA)
+
+constrast_ssas_d <- paste(
+  round(contrast_ssas$estimate / sigma(lmm_ssas_quad), 3),
+  " 95% CI [",
+  round(contrast_ssas$conf.low / sigma(lmm_ssas_quad), 3),
+  ", ",
+  round(contrast_ssas$conf.high / sigma(lmm_ssas_quad), 3),
+  "]",
+  sep = ""
+)
+
+## Bootstrapped effect size
+
+bootstrap_ssas   <- bootMer(lmm_ssas_quad,
+                            post_prediction(pred_df_ssas %>% 
+                                              filter(time == 9)),
+                            type = "parametric",
+                            nsim = 5000)
+
+boot_ci_ssas     <- boot.ci(bootstrap_ssas, type = "perc") 
+
+bootstrap_ssas_d <- paste(
+  round(bootstrap_ssas$t0 / sigma(lmm_ssas_quad), 3),
+  " 95% CI [",
+  round(boot_ci_ssas$percent[4] / sigma(lmm_ssas_quad), 3),
+  ", ",
+  round(boot_ci_ssas$percent[5] / sigma(lmm_ssas_quad), 3),
+  "]",
+  sep = ""
+)
 
 
 # Sensitivity analyses/Robustness checks
@@ -332,6 +397,21 @@ lmm_sass_sens_quad        <- lmer(ssas_sumscore
 lrt_sass_sens             <- anova(lmm_sass_sens_linear, 
                                    lmm_sass_sens_quad, 
                                    test = "LRT")
+
+# Random slopes model
+
+lmm_ssas_quad_rs        <- lmer(ssas_sumscore 
+                                ~ 1 
+                                + treatment 
+                                + time 
+                                + time_after 
+                                + time_sq 
+                                + time_after_sq 
+                                + (1 + time + time_after|id), 
+                                control = lmerControl(
+                                  optimizer = "bobyqa"
+                                ),
+                                data = gpp_data_main)
 
 ## Secondary research questions ------------------------------------------------
 
@@ -462,6 +542,7 @@ pred_df_csam <- pred_df_csam %>%
 
 ### Visualization of predicted values
 
+plot_csam_predict_active <- 
 ggplot(pred_df_csam,
        aes(
          y     = fit,
@@ -500,7 +581,7 @@ ggplot(pred_df_csam,
   ) +
   labs(
     x     = "Time (Weeks)",
-    y     = "Predicted Daily Average CSAM Use",
+    y     = "Predicted Daily Average CSAM Use (Hours)",
     color = "Group"
   ) +
   theme_classic()
@@ -558,7 +639,7 @@ plot_csam_time_all <-
     width = .33
   ) +
   scale_x_continuous(
-    breaks = 0:max(csam_time_arm$time)
+    breaks = 0:max(csam_time_arm_all$time)
   ) +
   labs(
     x = "Time",
@@ -601,6 +682,7 @@ pred_df_csam_all <- pred_df_csam_all %>%
 
 ### Visualization of predicted values
 
+plot_csam_predict <- 
 ggplot(pred_df_csam_all,
        aes(
          y     = fit,
@@ -627,11 +709,18 @@ ggplot(pred_df_csam_all,
     )
   ) +
   scale_y_continuous(
-    breaks = seq(0, 1.5, .25),
-    limits = c(-.25, 1.5)
+    breaks = seq(0, 1.0, .25),
+    limits = c(-.25, 1.0)
   ) +
   scale_x_continuous(
     breaks = 0:9
+  ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
   ) +
   geom_hline(
     yintercept = 0,
@@ -639,10 +728,28 @@ ggplot(pred_df_csam_all,
   ) +
   labs(
     x     = "Time (Weeks)",
-    y     = "Predicted Daily Average CSAM Use",
+    y     = "Predicted Daily Average CSAM Use (Hours)",
     color = "Group"
   ) +
   theme_classic()
+
+# Effect size calculation
+
+contrast_csam   <- predictions(lmm_csam_hours_all_quad,
+                               newdata    = pred_df_csam_all %>% 
+                                 filter(time == 9),
+                               hypothesis = "pairwise",
+                               re.form    = NA)
+
+constrast_csam_d <- paste(
+  round(contrast_csam$estimate / sigma(lmm_csam_hours_all_quad), 3),
+  " 95% CI [",
+  round(contrast_csam$conf.low / sigma(lmm_csam_hours_all_quad), 3),
+  ", ",
+  round(contrast_csam$conf.high / sigma(lmm_csam_hours_all_quad), 3),
+  "]",
+  sep = ""
+)
 
 ##### COPINE severity
 
@@ -668,6 +775,101 @@ lrt_csam_copine            <- anova(lmm_csam_copine_linear,
                                     lmm_csam_copine_quad, 
                                     test = "LRT")
 
+## Predicted COPINE severity value
+
+### Create new data for predictions
+
+pred_df_copine <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+)
+
+### Predictions from retained model
+
+predict_df_copine <- as.data.frame(
+  predict(lmm_csam_copine_linear, 
+          newdata = pred_df_copine,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_copine <- bind_cols(pred_df_copine, predict_df_copine)
+
+pred_df_copine <- pred_df_copine %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+### Visualization of predicted values
+
+plot_copine_predict <- 
+  ggplot(pred_df_copine,
+         aes(
+           y     = fit,
+           x     = time,
+           color = group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = 1:10,
+    limits = c(1, 10)
+  ) +
+  scale_x_continuous(
+    breaks = 0:9
+  ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted Maximum COPINE Severity",
+    color = "Group"
+  ) +
+  theme_classic()
+
+# Effect size calculation
+
+contrast_copine   <- predictions(lmm_csam_copine_linear,
+                               newdata    = pred_df_copine %>% 
+                                 filter(time == 9),
+                               hypothesis = "pairwise",
+                               re.form    = NA)
+
+constrast_copine_d <- paste(
+  round(contrast_copine$estimate / sigma(lmm_csam_copine_linear), 3),
+  " 95% CI [",
+  round(contrast_copine$conf.low / sigma(lmm_csam_copine_linear), 3),
+  ", ",
+  round(contrast_copine$conf.high / sigma(lmm_csam_copine_linear), 3),
+  "]",
+  sep = ""
+)
+
 ##### Youngest age
 
 lmm_csam_age_linear        <- lmer(schimra_b_csam_age_min 
@@ -691,6 +893,101 @@ lmm_csam_age_quad          <- lmer(schimra_b_csam_age_min
 lrt_csam_age               <- anova(lmm_csam_age_linear, 
                                     lmm_csam_age_quad, 
                                     test = "LRT")
+
+
+### Create new data for predictions
+
+pred_df_age <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+)
+
+### Predictions from retained model
+
+predict_df_age <- as.data.frame(
+  predict(lmm_csam_age_linear, 
+          newdata = pred_df_age,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_age <- bind_cols(pred_df_age, predict_df_age)
+
+pred_df_age <- pred_df_age %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+### Visualization of predicted values
+
+plot_age_predict <- 
+  ggplot(pred_df_age,
+         aes(
+           y     = fit,
+           x     = time,
+           color = group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = 0:10,
+    limits = c(0, 10)
+  ) +
+  scale_x_continuous(
+    breaks = 0:9
+  ) +
+  scale_color_manual(
+    labels = c("CBT", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted Minimum Age of Youngest Child",
+    color = "Group"
+  ) +
+  theme_classic()
+
+# Effect size calculation
+
+contrast_age   <- predictions(lmm_csam_age_linear,
+                                 newdata    = pred_df_age %>% 
+                                   filter(time == 9),
+                                 hypothesis = "pairwise",
+                                 re.form    = NA)
+
+constrast_age_d <- paste(
+  round(contrast_age$estimate / sigma(lmm_csam_age_linear), 3),
+  " 95% CI [",
+  round(contrast_age$conf.low / sigma(lmm_csam_age_linear), 3),
+  ", ",
+  round(contrast_age$conf.high / sigma(lmm_csam_age_linear), 3),
+  "]",
+  sep = ""
+)
+
 
 #### Socialization
 
@@ -841,3 +1138,143 @@ lmm_other_age_quad         <- lmer(schimra_b_other_age_min
 lrt_other_age              <- anova(lmm_other_age_linear, 
                                     lmm_other_age_quad, 
                                     test = "LRT")
+
+# Visualization export ---------------------------------------------------------
+
+# Model predictions
+
+predict_grid <- plot_grid(plot_ssas_predict,
+                          plot_csam_predict,
+                          plot_copine_predict,
+                          plot_age_predict,
+                          nrow = 2)
+
+save_plot("figures/gpp_primary-outcome-prediction.png",
+          predict_grid,
+          base_width = 10, base_height = 8)
+
+# Model tables -----------------------------------------------------------------
+
+## Basic table function
+
+lmm_table <- function(model, 
+                      dig          = 3,
+                      fixed_names  = c(
+                        "Intercept",
+                        "Treatment start",
+                        "Time (weeks)",
+                        "Time in treatment",
+                        "Time (quadratic)",
+                        "Time in treatment (quadratic)"
+                      ),
+                      random_groups = c(
+                        "Participant",
+                        "Residual"
+                      ),
+                      random_terms  = c(
+                        "Intercept SD",
+                        "SD"
+                      ) ) {
+  
+  # Fixed effects 
+  
+  fixed_effects  <- summary(model)$coefficients
+  
+  colnames(fixed_effects) <- c(
+    "Estimate",
+    "SE",
+    "df",
+    "t statistic",
+    "p-value"
+  )
+  
+  fixed_effects <- fixed_effects %>% 
+    round(dig) %>% 
+    as.data.frame() %>% 
+    mutate(
+      `p-value` = case_when(
+        `p-value` != 0 ~ as.character(`p-value`),
+        `p-value` == 0 ~ "<.001"
+      )
+    )
+  
+  fixed_effects$Term <- fixed_names
+  
+  fixed_effects <- fixed_effects %>% 
+    relocate(Term, .before = "Estimate")
+  
+  fixed_effects$Effect <- "Fixed"
+  
+  # Random Effects
+  
+  random_effects <- as.data.frame(summary(model)$varcor)
+  
+  colnames(random_effects) <- c(
+    "Groups",
+    "Term",
+    "x",
+    "Variance",
+    "Estimate"
+  )
+  
+  random_effects <- random_effects %>% 
+    select(-x, -Variance)
+  
+  random_effects$Groups <- random_groups
+  
+  random_effects$Term <- random_terms
+  
+  random_effects$Estimate <- round(random_effects$Estimate, dig)
+  
+  random_effects$Effect <- "Random"
+  
+  effects <- bind_rows(fixed_effects, random_effects) %>% 
+    relocate(Groups, .before = "Term")
+  
+  effects %>% 
+    as_grouped_data(groups = "Effect") %>% 
+    flextable() %>% 
+    align(align = c("left",
+                    "left",
+                    "left",
+                    "right",
+                    "right",
+                    "right",
+                    "right",
+                    "right"))
+  
+}
+
+# Results tables
+
+table_ssas <- lmm_ssas_quad %>% 
+  lmm_table() %>% 
+  autofit()
+  
+table_csam <- lmm_csam_hours_all_quad %>% 
+  lmm_table() %>% 
+  autofit()
+  
+table_copine <- lmm_csam_copine_linear %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment"
+    )
+  ) %>% 
+  autofit()
+  
+table_age <- lmm_csam_age_linear %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment"
+    )
+  ) %>% 
+  autofit()
+  
+

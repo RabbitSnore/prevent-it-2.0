@@ -8,7 +8,9 @@
 
 # Set up -----------------------------------------------------------------------
 
-packages <- c("lme4", "lmerTest", "ggplot")
+packages <- c("lme4", 
+              "lmerTest", 
+              "ggplot")
 
 lapply(packages, library, character.only = TRUE)
 
@@ -35,20 +37,41 @@ lapply(packages, library, character.only = TRUE)
 
 # Watch
 
-lmm_watch_motive_linear    <- lmer(schimra_a_watch ~ treatment + time + time_after + (1|id), data = pi_data_long)
-lmm_watch_motive_quad      <- lmer(schimra_a_watch ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
-lrt_watch_motive           <- anova(lmm_csam_hours_linear, lmm_csam_hours_quad, test = "LRT")
+lmm_watch_motive_linear    <- lmer(schimra_a_watch 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after + (1|id), 
+                                   data = gpp_data_main)
+
+lmm_watch_motive_quad      <- lmer(schimra_a_watch 
+                                   ~ 1 
+                                   + treatment 
+                                   + time 
+                                   + time_after 
+                                   + time_sq 
+                                   + time_after_sq 
+                                   + (1|id), 
+                                   data = gpp_data_main)
+
+lrt_watch_motive           <- anova(lmm_csam_hours_linear, 
+                                    lmm_csam_hours_quad, 
+                                    test = "LRT")
 
 # Socialize
 
 lmm_social_motive_linear   <- lmer(schimra_a_social ~ treatment + time + time_after + (1|id), data = pi_data_long)
+
 lmm_social_motive_quad     <- lmer(schimra_a_social ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+
 lrt_social_motive          <- anova(lmm_social_motive_linear, lmm_social_motive_quad, test = "LRT")
 
 # Interact
 
 lmm_interact_motive_linear <- lmer(schimra_a_interact ~ treatment + time + time_after + (1|id), data = pi_data_long)
+
 lmm_interact_motive_quad   <- lmer(schimra_a_interact ~ treatment + time + time_after + time_sq + time_after_sq + (1|id), data = pi_data_long)
+
 lrt_interact_motive        <- anova(lmm_interact_motive_linear, lmm_interact_motive_quad, test = "LRT")
 
 ### To what extent does the treatment produce sustainable changes in sexual urges (follow-up measure)?
@@ -103,9 +126,9 @@ neq20_comparison <- t.test(neq20 ~ trial, data = pi1_pi2_neq20_data)
 # each measurement point. The indicator will be coded 0 if the participant
 # remains in the trial, and it will be coded 1 if the participant has dropped
 # out of the trial. A participant will be said to have dropped out if they
-# provide no data at the measurement point in question and no further data.
-# A participant will not be coded as a dropout if they have successfully
-# completed the treatment early.
+# provide no data at the measurement point in question and no further data. A
+# participant will not be coded as a dropout if they have successfully completed
+# the treatment early.
 
 # This binary indicator will serve as the primary dependent measure for our
 # analyses of attrition and will also be used to calculate the simple rate of
@@ -117,9 +140,9 @@ neq20_comparison <- t.test(neq20 ~ trial, data = pi1_pi2_neq20_data)
 #### Analysis of final attrition rate
 
 # We will calculate the dropout rate at the end of the first treatment wave
-# (i.e., at the post-treatment measurement, prior to the follow up), for both the
-# current trial as well as the PI1 trial. These two rates will be compared using
-# a chi-square test.
+# (i.e., at the post-treatment measurement, prior to the follow up), for both
+# the current trial as well as the PI1 trial. These two rates will be compared
+# using a chi-square test.
 
 attrition_rate_chisq <- prop.test(x = c(att_rate_pi2, att_rate_pi1),
                                   n = c(n_pi2, n_pi1),
@@ -160,9 +183,14 @@ lrt_eq5d_followup      <- anova(lmm_eq5d_followup_main, lmm_eq5d_followup_int, t
 
 ### How does Prevent It 2.0 compare to the first version of Prevent It?                   
 
-# To assess the extent to which Prevent It 2.0 effectively reduces problematic sexual behavior compared to Prevent It 1.0, we will fit models predicting the variables measured by the SChiMRA+ Part B, pretreatment and posttreatment. The treatment indicator variable will be expanded such that
-# 0 = waitlist (PI2), 1 = treatment (PI2), 2 = placebo (PI1), 3 = treatment (PI1),
-# coded with treatment contrasts such that the waitlist is the reference group. 
+# To assess the extent to which Prevent It 2.0 effectively reduces problematic
+# sexual behavior compared to Prevent It 1.0, we will fit models predicting the
+# variables measured by the SChiMRA+ Part B, pretreatment and posttreatment. The
+# treatment indicator variable will be expanded such that
+
+# 0 = waitlist (PI2), 1 = treatment (PI2), 2 = placebo (PI1), 3 = treatment
+# (PI1), coded with treatment contrasts such that the waitlist is the reference
+# group.
 
 #### CSAM
 
