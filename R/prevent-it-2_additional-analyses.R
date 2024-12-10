@@ -422,6 +422,244 @@ contrast_motiveinteract_d <- paste(
   sep = ""
 )
 
+# NEQ-20 wrangling -------------------------------------------------------------
+
+# Item text
+
+neq_20_text <- c(
+  "I had more problems with my sleep",
+  "I felt like I was under more stress",
+  "I experienced more anxiety",
+  "I felt more worried",
+  "I experienced more hopelessness",
+  "I experienced more unpleasant feelings",
+  "I felt that the issue I was looking for help with got worse",
+  "Unpleasant memories resurfaced",
+  "I became afraid that other people would find out about my treatment",
+  "I got thoughts that it would be better if I did not exist anymore and that I should take my own life",
+  "I started feeling ashamed in front of other people because I was having treatment",
+  "I stopped thinking that things could get better",
+  "I started thinking that the issue I was seeking help for could not be made any better",
+  "I think that I have developed a dependency on my treatment",
+  "I did not always understand my treatment",
+  "I did not always understand my therapist",
+  "I did not have confidence in my treatment",
+  "I felt that the treatment did not produce any results",
+  "I felt that my expectations for the therapist were not fulfilled",
+  "I felt that the treatment was not motivating"
+)
+
+# Select NEQ-20 items
+
+neq_20_raw <- gpp_data_main %>% 
+  select(starts_with("neq_20"),
+         -neq_20_other
+  )
+
+# Separate item types
+
+neq_20_indicated <- neq_20_raw %>% 
+  select(
+    all_of(
+      paste("neq_20_",
+            str_pad(1:20, width = 2, pad = "0", side = "left"),
+            sep = "")
+    )
+  )
+
+neq_20_quant <- neq_20_raw %>% 
+  select(ends_with("a"))
+
+neq_20_cause <- neq_20_raw %>% 
+  select(ends_with("b"))
+
+# Negative Experience Indicated
+
+neq_20_summary_ind <-  neq_20_indicated %>% 
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "indicated"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(indicated)) %>% 
+  summarise(
+    Indicated = sum(indicated)/n(),
+    ind_n     = sum(indicated),
+    n         = n()
+  )
+
+# Negative Experience Caused by Treatment
+
+neq_20_summary_cause <-  neq_20_cause %>% 
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "cause"
+  ) %>% 
+  extract(
+    col   = item,
+    into  = "item",
+    regex = "(.*)b"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(cause)) %>% 
+  summarise(
+    caused_n  = sum(cause)
+  )
+
+# Join qualitative summary
+
+neq_20_summary_qual <- neq_20_summary_ind %>% 
+  left_join(neq_20_summary_cause, by = "item") %>% 
+  mutate(
+    Caused       = caused_n/ind_n,
+    Caused_total = caused_n/n
+  ) %>% 
+  relocate(
+    Caused, Caused_total,
+    .after = Indicated
+  )
+
+neq_20_summary_qual$item <- neq_20_text
+
+# Quantitative summary
+
+neq_20_summary_quant <- neq_20_quant %>%
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "rating"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(rating)) %>% 
+  summarise(
+    Mean   = mean(rating),
+    SD     = sd(rating),
+    Median = median(rating)
+  )
+
+neq_20_summary_quant$item <- neq_20_text  
+
+# Join summaries
+
+neq_20_summary <- neq_20_summary_qual %>% 
+  left_join(neq_20_summary_quant, by = "item") %>% 
+  relocate(
+    Mean, SD, Median,
+    .after = Caused_total
+  )
+
+neq_20_summary_desc <- neq_20_summary %>% 
+  arrange(desc(Indicated))
+
+# Rate of negative experiences
+
+neq_20_frequencies <- neq_20_indicated %>% 
+  filter(complete.cases(.)) %>% 
+  map_df(as.numeric) %>% 
+  rowSums()
+
+neq_20_rate <- sum(neq_20_frequencies > 0)/length(neq_20_frequencies)
+
+neq_20_freq_cause <- neq_20_cause %>%
+  filter(if_any(everything(), ~ !is.na(.x))) %>% 
+  map_df(as.numeric) %>%
+  rowSums(na.rm = TRUE)
+
+neq_20_rate_cause <- sum(neq_20_freq_cause > 0)/length(neq_20_frequencies)
+
+# NEQ-20 table
+
+## Function
+
+neq_table <- function(neq_summary, digits = 3, head_n = 20) {
+  
+  require(flextable)
+  
+  neq_summary <- head(neq_summary, head_n)
+  
+  item <- neq_summary$item
+  
+  indicated <- paste(
+    format(round(neq_summary$Indicated, digits) * 100, nsmall = 1), 
+    "% (",
+    neq_summary$ind_n,
+    ")",
+    sep = ""
+  )
+  
+  treat_cause <- paste(
+    format(round(neq_summary$Caused_total, digits) * 100, nsmall = 1), 
+    "% (",
+    neq_summary$caused_n,
+    ")",
+    sep = ""
+  )
+  
+  mean_sd <- paste(
+    format(round(neq_summary$Mean, digits), nsmall = digits),
+    " (",
+    format(round(neq_summary$SD, digits), nsmall = digits),
+    ")",
+    sep = ""
+  )
+  
+  mean_sd <- str_replace_all(mean_sd, "   NA", "-")
+  
+  neq_df <- data.frame(
+    item,
+    indicated,
+    treat_cause,
+    mean_sd
+  )
+  
+  flextable(neq_df,
+            cwidth = c(
+              4.5, 1, 1, 1
+            )) %>% 
+    set_header_labels(
+      values = c(
+        "Negative Experience",
+        "Experience Indicated\n% total (n)",
+        "Experience Caused by Treatment\n% total (n)",
+        "Severity\nMean (SD)"
+      )
+    ) %>%
+    align(
+      align = c(
+        "left", 
+        "center", 
+        "center",
+        "center"), 
+      part = "all"
+    )
+  
+}
+
+## Tables
+
+neq_20_table_full <- neq_20_summary_desc %>% 
+  neq_table()
+
+neq_20_table_10   <- neq_20_summary_desc %>% 
+  neq_table(head_n = 10)
+
+neq_20_table_05   <- neq_20_summary_desc %>% 
+  neq_table(head_n = 5)
+
+## Table export
+
+save_as_docx("Full"   = neq_20_table_full,
+             "Top 10" = neq_20_table_10,
+             "Top 5"  = neq_20_table_05,
+             path  = "output/gpp_neq-20-tables.docx",
+             align = "center")
+
+
 ### To what extent does the treatment produce sustainable changes in sexual urges (follow-up measure)?
 
 # To assess the extent to which the treatment produces a sustainable change in

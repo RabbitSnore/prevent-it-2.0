@@ -375,6 +375,7 @@ miss_ssas              <- glmer(ssas_missing
                                 + treatment 
                                 + time 
                                 + time_after 
+                                + time_sq
                                 + ADDITIONAL_PREDICTORS 
                                 + (1|id), 
                                 data = gpp_data_main, 
@@ -399,13 +400,23 @@ lmm_sass_sens_quad        <- lmer(ssas_sumscore
                                   + time 
                                   + time_after 
                                   + time_sq 
-                                  + time_after_sq 
+                                  + inv_mills 
+                                  + (1|id), 
+                                  data = gpp_data_main)
+
+lmm_sass_sens_quad_2      <- lmer(ssas_sumscore 
+                                  ~ 1 
+                                  + treatment 
+                                  + time 
+                                  + time_after 
+                                  + time_sq 
                                   + inv_mills 
                                   + (1|id), 
                                   data = gpp_data_main)
 
 lrt_sass_sens             <- anova(lmm_sass_sens_linear, 
                                    lmm_sass_sens_quad, 
+                                   lmm_sass_sens_quad_2, 
                                    test = "LRT")
 
 # Random slopes model
@@ -1310,6 +1321,8 @@ lmm_table <- function(model,
       )
     )
   
+  fixed_effects$`p-value` <- str_replace(fixed_effects$`p-value`, "0\\.", "\\.")
+  
   fixed_effects$Term <- fixed_names
   
   fixed_effects <- fixed_effects %>% 
@@ -1406,4 +1419,19 @@ table_age <- lmm_csam_age_quad %>%
   ) %>% 
   autofit()
   
+# Export tables
 
+## Primary and secondary outcomes
+
+if (!dir.exists("output")) {
+  
+  dir.create("output")
+  
+}
+
+save_as_docx("SSAS"                  = table_ssas,
+             "CSAM Use"              = table_csam,
+             "COPINE Severity"       = table_copine,
+             "Age of Youngest Child" = table_age,
+             path  = "output/gpp_main-tables.docx",
+             align = "center")

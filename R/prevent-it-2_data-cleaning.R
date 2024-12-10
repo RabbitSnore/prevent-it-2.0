@@ -3517,6 +3517,10 @@ hbi_19_df <- map_df(hbi_19_df, as.numeric)
 
 raw_bound$hbi_19_sumscore  <- rowSums(hbi_19_df)
 
+# Missingness indicator --------------------------------------------------------
+
+raw_bound$ssas_missing <- as.numeric(is.na(raw_bound$ssas_sumscore))
+
 # Pre-Post indicator -----------------------------------------------------------
 
 # For analyses of variables only measured at the pre and post timepoints, it is
