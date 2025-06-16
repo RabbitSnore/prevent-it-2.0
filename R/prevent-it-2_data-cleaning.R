@@ -3118,7 +3118,10 @@ raw_bound <- raw_bound %>%
 # Remove all cases not randomized
 
 raw_bound <- raw_bound %>% 
-  filter(str_detect(groups, "randomized"))
+  filter(str_detect(groups, "randomized") | study_code == case_nottagged)
+
+## There was a case that was in fact randomized but was not tagged as such. This
+## case is handled with the object case_nottagged
 
 # Cases with missing waitlist questionnaires
 
@@ -3155,10 +3158,16 @@ wl_missed_time_2 <-
 raw_bound[raw_bound$study_code == case_wl_missed_2, ]$time    <- wl_missed_time_2
 raw_bound[raw_bound$study_code == case_wl_missed_2, ]$time_sq <- wl_missed_time_2^2
 
+# Add the group indicator for the case that was erroneously not tagged as
+# randomized
+
+raw_bound$assigned_group[raw_bound$study_code == case_nottagged] <- "waitlist"
+
 # Remove masked objects, just in case
 
 rm(case_wl_missed) 
 rm(case_wl_missed_2) 
+rm(case_nottagged)
 
 # Calculate SSAS total score ---------------------------------------------------
 
@@ -3259,7 +3268,8 @@ raw_bound <- raw_bound %>%
     )
   )
 
-raw_bound$schimra_b_csam_hours_avg <- raw_bound$schimra_b_csam_hours_sum/7
+# raw_bound$schimra_b_csam_hours_avg <- raw_bound$schimra_b_csam_hours_sum/7
+raw_bound$schimra_b_csam_hours_avg <- raw_bound$schimra_b_csam_hours_sum
 
 ## COPINE severity
 
@@ -3338,6 +3348,8 @@ socializing_hours <- socializing_hours + sociailizing_minutes
 raw_bound$schimra_b_social_hours_sum <- 
   rowSums(socializing_hours, na.rm = TRUE)
 
+raw_bound$schimra_b_social_hours_sum[is.na(raw_bound$schimra_b_socialize)] <- NA
+
 raw_bound <- raw_bound %>% 
   mutate(
     schimra_b_social_hours_sum = case_when(
@@ -3401,6 +3413,8 @@ interacting_hours <- interacting_hours + sociailizing_minutes
 
 raw_bound$schimra_b_interact_hours_sum <- 
   rowSums(interacting_hours, na.rm = TRUE)
+
+raw_bound$schimra_b_interact_hours_sum[is.na(raw_bound$schimra_b_interact)] <- NA
 
 raw_bound <- raw_bound %>% 
   mutate(
@@ -3467,6 +3481,8 @@ other_hours <- other_hours + sociailizing_minutes
 raw_bound$schimra_b_other_hours_sum <- 
   rowSums(other_hours, na.rm = TRUE)
 
+raw_bound$schimra_b_other_hours_sum[is.na(raw_bound$schimra_b_other)] <- NA
+
 raw_bound <- raw_bound %>% 
   mutate(
     schimra_b_other_hours_sum = case_when(
@@ -3506,7 +3522,7 @@ raw_bound$schimra_b_other_age_mean <- ayc_soc_mean
 
 # HBI-19 total score
 
-# Create temporary subset of only SSAS data
+# Create temporary subset of only HBI-19 data
 
 hbi_19_df <- raw_bound %>% 
   select(starts_with("hbi_19_"))
@@ -3516,6 +3532,124 @@ hbi_19_df <- map_df(hbi_19_df, as.numeric)
 # Calculate total scores
 
 raw_bound$hbi_19_sumscore  <- rowSums(hbi_19_df)
+
+# Calculate RAADS-14 scores ----------------------------------------------------
+
+# RAADS-14 total score
+
+# Create temporary subset of only RAADS-14 data
+
+raads_14_df <- raw_bound %>% 
+  select(starts_with("raads_14_"))
+
+raads_14_df <- map_df(raads_14_df, as.numeric)
+
+# Calculate total scores
+
+raw_bound$raads_14_sumscore  <- rowSums(raads_14_df)
+
+# Calculate PHQ-9 scores -------------------------------------------------------
+
+# PHQ-9 total score
+
+# Create temporary subset of only PHQ-9 data
+
+phq_df <- raw_bound %>% 
+  select(starts_with("phq_"))
+
+phq_df <- map_df(phq_df, as.numeric)
+
+# Calculate total scores
+
+raw_bound$phq_sumscore  <- rowSums(phq_df)
+
+# Calculate AUDIT scores -------------------------------------------------------
+
+# AUDIT total score
+
+# Create temporary subset of only AUDIT data
+
+audit_df <- raw_bound %>% 
+  select(starts_with("audit_"))
+
+audit_df <- map_df(audit_df, as.numeric)
+
+# Calculate total scores
+
+raw_bound$audit_sumscore  <- rowSums(audit_df)
+
+# Calculate SWCH scores --------------------------------------------------------
+
+# SWCH total score
+
+# Create temporary subset of only SWCH data
+
+swch_df <- raw_bound %>% 
+  select(starts_with("swch_0"))
+
+swch_df <- map_df(swch_df, as.numeric)
+
+# Calculate total scores
+
+raw_bound$swch_sumscore  <- rowSums(swch_df)
+
+# Calculate C-ECWC scores ------------------------------------------------------
+
+# CECWC total score
+
+# Create temporary subset of only CECWC data
+
+cecwc_df <- raw_bound %>% 
+  select(starts_with("cecwc_0"))
+
+cecwc_df <- map_df(cecwc_df, as.numeric)
+
+# Calculate total scores
+
+raw_bound$cecwc_sumscore  <- rowSums(cecwc_df)
+
+# Calculate ACUTE-2007 scores --------------------------------------------------
+
+# ACUTE-2007 total score
+
+# Create temporary subset of only ACUTE data
+
+acute_df <- raw_bound %>% 
+  select(starts_with("acute_"))
+
+acute_df <- map_df(acute_df, as.numeric)
+
+# Calculate total scores
+
+raw_bound$acute_sum  <- rowSums(acute_df)
+
+# Potential predictors on missingness and baselines ----------------------------
+
+predictor_df <- raw_bound %>% 
+  select(
+    study_code,
+    time,
+    lassie_pedophilia_01,
+    cecwc_sumscore,
+    swch_sumscore,
+    raads_14_sumscore,
+    phq_sumscore,
+    ssas_sumscore
+  ) %>% 
+  filter(time == 0) %>% 
+  group_by(study_code) %>% 
+  summarise(
+    lassie_pedophilia_01_baseline = mean(as.numeric(lassie_pedophilia_01), na.rm = TRUE),
+    cecwc_sumscore_baseline       = mean(cecwc_sumscore, na.rm = TRUE),
+    swch_sumscore_baseline        = mean(swch_sumscore, na.rm = TRUE),
+    raads_14_sumscore_baseline    = mean(raads_14_sumscore, na.rm = TRUE), 
+    phq_sumscore_baseline         = mean(phq_sumscore, na.rm = TRUE),
+    ssas_sumscore_baseline        = mean(ssas_sumscore, na.rm = TRUE)
+  ) %>% 
+  ungroup()
+
+raw_bound <- raw_bound %>% 
+  left_join(predictor_df, by = "study_code")
 
 # Missingness indicator --------------------------------------------------------
 
@@ -3552,6 +3686,33 @@ raw_bound <- raw_bound %>%
     .after = timepoint
   )
 
+# Pre vs. Follow-Up indicator --------------------------------------------------
+
+raw_bound <- raw_bound %>% 
+  mutate(
+    post_follow = case_when(
+      timepoint == "post"              ~ 0,
+      timepoint == "pre_1"             ~ NA,
+      timepoint == "pre_2" & time == 0 ~ NA,
+      timepoint == "pre_2" & time != 0 ~ 1,
+      timepoint == "follow_up"         ~ 1,
+      timepoint == "weekly"            ~ NA
+    ),
+    treat_postfollow = case_when(
+      assigned_group == "cbt"      & timepoint == "post"                  ~ 1,
+      assigned_group == "cbt"      & timepoint == "follow_up"             ~ 1,
+      assigned_group == "waitlist" & timepoint == "post" & treatment == 0 ~ 0,
+      assigned_group == "waitlist" & timepoint == "post" & treatment == 1 ~ 1,
+      assigned_group == "waitlist" & timepoint == "pre_2" & time == 0     ~ NA,
+      assigned_group == "waitlist" & timepoint == "pre_2" & time != 0     ~ 0,
+      assigned_group == "waitlist" & timepoint == "follow_up"             ~ 1
+    )
+  ) %>% 
+  relocate(
+    post_follow, treat_postfollow,
+    .after = timepoint
+  )
+
 # Data for analysis and export -------------------------------------------------
 
 # For analysis of primary and secondary outcomes
@@ -3562,7 +3723,9 @@ gpp_data_main <- raw_bound %>%
     -first_waitlist_weekly, 
     -first_treatment_weekly, 
     -waitlist_reference_weekly,
-    -treatment_date
+    -treatment_date,
+    -post_follow,
+    -treat_postfollow
   ) %>% 
   rename(
     id = study_code
@@ -3581,3 +3744,21 @@ gpp_data_active_csam <- gpp_data_main %>%
   ) %>% 
   ungroup() %>% 
   filter(active_csam == 1)
+
+# Follow up data
+
+gpp_data_followup <- raw_bound %>%
+  select(
+    -first_waitlist_weekly, 
+    -first_treatment_weekly, 
+    -waitlist_reference_weekly,
+    -treatment_date
+  ) %>% 
+  rename(
+    id = study_code
+  ) %>% 
+  type_convert()
+
+# Export cleaned data file
+
+write_csv(gpp_data_main, "data/gpp_data_main_cleaned.csv")

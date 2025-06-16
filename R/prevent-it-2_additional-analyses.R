@@ -10,7 +10,8 @@
 
 packages <- c("lme4", 
               "lmerTest", 
-              "ggplot")
+              "ggplot2",
+              "psych")
 
 lapply(packages, library, character.only = TRUE)
 
@@ -133,7 +134,7 @@ plot_motivewatch_predict <-
     breaks = 0:9
   ) +
   scale_color_manual(
-    labels = c("CBT", "Waitlist"),
+    labels = c("Prevent It", "Waitlist"),
     values = c(
       "#ED254E",
       "#003F91"
@@ -141,7 +142,7 @@ plot_motivewatch_predict <-
   ) +
   labs(
     x     = "Time (Weeks)",
-    y     = "Predicted Motvation to Watch CSAM",
+    y     = "Predicted Motvation to Observe Children",
     color = "Group"
   ) +
   theme_classic()
@@ -262,7 +263,7 @@ plot_motivesocial_predict <-
     breaks = 0:9
   ) +
   scale_color_manual(
-    labels = c("CBT", "Waitlist"),
+    labels = c("Prevent It", "Waitlist"),
     values = c(
       "#ED254E",
       "#003F91"
@@ -391,7 +392,7 @@ plot_motiveinteract_predict <-
     breaks = 0:9
   ) +
   scale_color_manual(
-    labels = c("CBT", "Waitlist"),
+    labels = c("Prevent It", "Waitlist"),
     values = c(
       "#ED254E",
       "#003F91"
@@ -660,6 +661,271 @@ save_as_docx("Full"   = neq_20_table_full,
              align = "center")
 
 
+## Split by assigned group
+
+### Select NEQ-20 items
+
+neq_20_cbt <- gpp_data_main %>% 
+  filter(assigned_group == "cbt") %>% 
+  select(starts_with("neq_20"),
+         -neq_20_other
+  )
+
+### Separate item types
+
+neq_20_indicated_cbt <- neq_20_cbt %>% 
+  select(
+    all_of(
+      paste("neq_20_",
+            str_pad(1:20, width = 2, pad = "0", side = "left"),
+            sep = "")
+    )
+  )
+
+neq_20_quant_cbt <- neq_20_cbt %>% 
+  select(ends_with("a"))
+
+neq_20_cause_cbt <- neq_20_cbt %>% 
+  select(ends_with("b"))
+
+### Negative Experience Indicated
+
+neq_20_summary_ind_cbt <-  neq_20_indicated_cbt %>% 
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "indicated"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(indicated)) %>% 
+  summarise(
+    Indicated = sum(indicated)/n(),
+    ind_n     = sum(indicated),
+    n         = n()
+  )
+
+### Negative Experience Caused by Treatment
+
+neq_20_summary_cause_cbt <-  neq_20_cause_cbt %>% 
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "cause"
+  ) %>% 
+  extract(
+    col   = item,
+    into  = "item",
+    regex = "(.*)b"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(cause)) %>% 
+  summarise(
+    caused_n  = sum(cause)
+  )
+
+### Join qualitative summary
+
+neq_20_summary_qual_cbt <- neq_20_summary_ind_cbt %>% 
+  left_join(neq_20_summary_cause, by = "item") %>% 
+  mutate(
+    Caused       = caused_n/ind_n,
+    Caused_total = caused_n/n
+  ) %>% 
+  relocate(
+    Caused, Caused_total,
+    .after = Indicated
+  )
+
+neq_20_summary_qual_cbt$item <- neq_20_text
+
+### Quantitative summary
+
+neq_20_summary_quant_cbt <- neq_20_quant_cbt %>%
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "rating"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(rating)) %>% 
+  summarise(
+    Mean   = mean(rating),
+    SD     = sd(rating),
+    Median = median(rating)
+  )
+
+neq_20_summary_quant_cbt$item <- neq_20_text  
+
+### Join summaries
+
+neq_20_summary_cbt <- neq_20_summary_qual_cbt %>% 
+  left_join(neq_20_summary_quant, by = "item") %>% 
+  relocate(
+    Mean, SD, Median,
+    .after = Caused_total
+  )
+
+neq_20_summary_desc_cbt <- neq_20_summary_cbt %>% 
+  arrange(desc(Indicated))
+
+### Rate of negative experiences
+
+neq_20_frequencies_cbt <- neq_20_indicated_cbt %>% 
+  filter(complete.cases(.)) %>% 
+  map_df(as.numeric) %>% 
+  rowSums()
+
+neq_20_rate_cbt <- sum(neq_20_frequencies_cbt > 0)/length(neq_20_frequencies_cbt)
+
+neq_20_freq_cause_cbt <- neq_20_cause_cbt %>%
+  filter(if_any(everything(), ~ !is.na(.x))) %>% 
+  map_df(as.numeric) %>%
+  rowSums(na.rm = TRUE)
+
+neq_20_rate_cause_cbt <- sum(neq_20_freq_cause_cbt > 0)/length(neq_20_frequencies_cbt)
+
+### Select NEQ-20 items
+
+neq_20_wl <- gpp_data_main %>% 
+  filter(assigned_group == "waitlist") %>% 
+  select(starts_with("neq_20"),
+         -neq_20_other
+  )
+
+### Separate item types
+
+neq_20_indicated_wl <- neq_20_wl %>% 
+  select(
+    all_of(
+      paste("neq_20_",
+            str_pad(1:20, width = 2, pad = "0", side = "left"),
+            sep = "")
+    )
+  )
+
+neq_20_quant_wl <- neq_20_wl %>% 
+  select(ends_with("a"))
+
+neq_20_cause_wl <- neq_20_wl %>% 
+  select(ends_with("b"))
+
+### Negative Experience Indicated
+
+neq_20_summary_ind_wl <-  neq_20_indicated_wl %>% 
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "indicated"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(indicated)) %>% 
+  summarise(
+    Indicated = sum(indicated)/n(),
+    ind_n     = sum(indicated),
+    n         = n()
+  )
+
+### Negative Experience Caused by Treatment
+
+neq_20_summary_cause_wl <-  neq_20_cause_wl %>% 
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "cause"
+  ) %>% 
+  extract(
+    col   = item,
+    into  = "item",
+    regex = "(.*)b"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(cause)) %>% 
+  summarise(
+    caused_n  = sum(cause)
+  )
+
+### Join qualitative summary
+
+neq_20_summary_qual_wl <- neq_20_summary_ind_wl %>% 
+  left_join(neq_20_summary_cause, by = "item") %>% 
+  mutate(
+    Caused       = caused_n/ind_n,
+    Caused_total = caused_n/n
+  ) %>% 
+  relocate(
+    Caused, Caused_total,
+    .after = Indicated
+  )
+
+neq_20_summary_qual_wl$item <- neq_20_text
+
+### Quantitative summary
+
+neq_20_summary_quant_wl <- neq_20_quant_wl %>%
+  map_df(as.numeric) %>% 
+  pivot_longer(
+    cols      = everything(),
+    names_to  = "item",
+    values_to = "rating"
+  ) %>% 
+  group_by(item) %>%
+  filter(complete.cases(rating)) %>% 
+  summarise(
+    Mean   = mean(rating),
+    SD     = sd(rating),
+    Median = median(rating)
+  )
+
+neq_20_summary_quant_wl$item <- neq_20_text  
+
+### Join summaries
+
+neq_20_summary_wl <- neq_20_summary_qual_wl %>% 
+  left_join(neq_20_summary_quant, by = "item") %>% 
+  relocate(
+    Mean, SD, Median,
+    .after = Caused_total
+  )
+
+neq_20_summary_desc_wl <- neq_20_summary_wl %>% 
+  arrange(desc(Indicated))
+
+### Rate of negative experiences
+
+neq_20_frequencies_wl <- neq_20_indicated_wl %>% 
+  filter(complete.cases(.)) %>% 
+  map_df(as.numeric) %>% 
+  rowSums()
+
+neq_20_rate_wl <- sum(neq_20_frequencies_wl > 0)/length(neq_20_frequencies_wl)
+
+neq_20_freq_cause_wl <- neq_20_cause_wl %>%
+  filter(if_any(everything(), ~ !is.na(.x))) %>% 
+  map_df(as.numeric) %>%
+  rowSums(na.rm = TRUE)
+
+neq_20_rate_cause_wl <- sum(neq_20_freq_cause_wl > 0)/length(neq_20_frequencies_wl)
+
+## Group tables
+
+neq_20_table_10_cbt   <- neq_20_summary_desc_cbt %>% 
+  neq_table(head_n = 10)
+
+neq_20_table_10_wl   <- neq_20_summary_desc_wl %>% 
+  neq_table(head_n = 10)
+
+### Table export
+
+save_as_docx("CBT - Top 10"       = neq_20_table_10_cbt,
+             "Waitlist - Top 10"  = neq_20_table_10_wl,
+             path  = "output/gpp_neq-20-tables-grouped.docx",
+             align = "center")
+
 ### To what extent does the treatment produce sustainable changes in sexual urges (follow-up measure)?
 
 # To assess the extent to which the treatment produces a sustainable change in
@@ -678,14 +944,81 @@ save_as_docx("Full"   = neq_20_table_full,
 # test.
 #
 # A significant interaction such that the treatment group's slope from post-
-# treatment to followup is smaller (i.e., less positive) than the  waitlist's 
+# treatment to followup is smaller (i.e., less positive) than the  waitlist's
 # slope would provide support for the sustained effectiveness of the treatment.
-# As long as the primary analyses also support the effectiveness of the treatment,
-# a non-significant 
+# As long as the primary analyses also support the effectiveness of the
+# treatment, a non-significant interaction would also support lasting change.
 
-lmm_ssas_total_followup_main <- lmer(ssas_total ~ treatment + measurement + baseline + (1|id), data = pi_data_csam_hours_sust)
-lmm_ssas_total_followup_int  <- lmer(ssas_total ~ treatment * measurement + baseline + (1|id), data = pi_data_csam_hours_sust)
-lrt_ssas_total_followup      <- anova(lmm_ssas_total_followup_main, lmm_ssas_total_followup_int, test = "LRT")
+lmm_ssas_total_followup_main <- lmer(ssas_sumscore
+                                     ~ 1
+                                     + treat_postfollow 
+                                     + post_follow
+                                     + ssas_sumscore_baseline
+                                     + (1|id), 
+                                     data = gpp_data_followup)
+
+lmm_ssas_total_followup_int  <- lmer(ssas_sumscore 
+                                     ~ 1
+                                     + treat_postfollow 
+                                     * post_follow
+                                     + ssas_sumscore_baseline
+                                     + (1|id), 
+                                     data = gpp_data_followup)
+
+lrt_ssas_total_followup      <- anova(lmm_ssas_total_followup_main, 
+                                      lmm_ssas_total_followup_int, 
+                                      test = "LRT")
+
+ssas_followup_desc <- gpp_data_followup %>% 
+  filter(complete.cases(treat_postfollow, post_follow)) %>% 
+  group_by(treat_postfollow, post_follow) %>% 
+  summarise(
+    mean  = mean(ssas_sumscore, na.rm = TRUE),
+    sd    = sd(ssas_sumscore, na.rm = TRUE),
+    se    = sd/sqrt(n()),
+    ci_lb = mean - se*qnorm(.975), 
+    ci_ub = mean + se*qnorm(.975) 
+  )
+
+ggplot(ssas_followup_desc,
+       aes(
+         x     = as.factor(post_follow),
+         color = as.factor(treat_postfollow),
+         group = as.factor(treat_postfollow),
+         y     = mean,
+         ymax  = ci_ub,
+         ymin  = ci_lb
+       )) +
+  geom_point(
+    size = 1
+  ) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_errorbar(
+    width     = .33,
+    linewidth = 1
+  ) +
+  scale_color_manual(
+    labels = c("Waitlist", "Prevent It"),
+    values = c(
+      "#003F91",
+      "#ED254E"
+    )
+  ) +
+  scale_x_discrete(
+    labels = c("Post", "Follow-up")
+  ) +
+  scale_y_continuous(
+    limits = c(0, 48),
+    breaks = seq(0, 48, 6)
+  ) +
+  labs(
+    x     = "Time",
+    y     = "Mean SSAS Sum Score",
+    color = "Group"
+  ) +
+  theme_classic()
 
 ### How severe are the side-effects of the treatment?
 
@@ -934,6 +1267,306 @@ ggplot(hbi_19_summary,
   ) +
   theme_classic()
 
+# ACUTE-2007 dynamic risk
+
+lmm_acute_linear      <- lmer(acute_sum 
+                              ~ 1 
+                              + treatment 
+                              + time 
+                              + time_after 
+                              + (1|id), 
+                              data = gpp_data_main)
+
+lmm_acute_quad        <- lmer(acute_sum 
+                              ~ 1 
+                              + treatment 
+                              + time 
+                              + time_after 
+                              + time_sq
+                              + (1|id), 
+                              data = gpp_data_main)
+
+lrt_acute             <- anova(lmm_acute_linear, 
+                               lmm_acute_quad, 
+                               test = "LRT")
+
+## Predicted ACUTE-2007 values
+
+### Create new data for predictions
+
+pred_df_acute <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq       = time^2
+  )
+
+### Predictions from retained model
+
+predict_df_acute <- as.data.frame(
+  predict(lmm_acute_quad, 
+          newdata = pred_df_acute,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_acute <- bind_cols(pred_df_acute, predict_df_acute)
+
+pred_df_acute <- pred_df_acute %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+### Visualization of predicted values
+
+plot_acute_predict <- 
+  ggplot(pred_df_acute,
+         aes(
+           y     = fit,
+           x     = time,
+           color = group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 21, 3),
+    limits = c(0, 21)
+  ) +
+  scale_x_continuous(
+    breaks = 0:10
+  ) +
+  scale_color_manual(
+    labels = c("Prevent It", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted ACUTE-2007 Sum Score",
+    color = "Group"
+  ) +
+  theme_classic()
+
+# Effect size calculation
+
+contrast_acute   <- predictions(lmm_acute_quad,
+                               newdata    = pred_df_acute %>% 
+                                 filter(time == 9),
+                               hypothesis = "pairwise",
+                               re.form    = NA)
+
+contrast_acute_d <- paste(
+  round(contrast_acute$estimate / sigma(lmm_acute_quad), 3),
+  " 95% CI [",
+  round(contrast_acute$conf.low / sigma(lmm_acute_quad), 3),
+  ", ",
+  round(contrast_acute$conf.high / sigma(lmm_acute_quad), 3),
+  "]",
+  sep = ""
+)
+
+# Mixed Effects Model Without Crossover (Primary Outcome, SSAS)
+
+# This can be considered a sensitivity analysis that only looks at the data
+# without the waitlist participants who crossed over into the treatment.
+
+lmm_ssas_nc_linear      <- lmer(ssas_sumscore 
+                                ~ 1 
+                                + treatment 
+                                + time 
+                                + time_after 
+                                + (1|id), 
+                                data = gpp_data_main %>% 
+                                  filter(
+                                    !(assigned_group == "waitlist" & time > 10)
+                                  ))
+
+lmm_ssas_nc_quad        <- lmer(ssas_sumscore 
+                                ~ 1 
+                                + treatment 
+                                + time 
+                                + time_after 
+                                + time_sq
+                                + (1|id), 
+                                data = gpp_data_main %>% 
+                                  filter(
+                                    !(assigned_group == "waitlist" & time > 10)
+                                  ))
+
+lmm_ssas_nc_quad_2      <- lmer(ssas_sumscore 
+                                ~ 1 
+                                + treatment 
+                                + time 
+                                + time_after 
+                                + time_sq 
+                                + time_after_sq 
+                                + (1|id), 
+                                data = gpp_data_main %>% 
+                                  filter(
+                                    !(assigned_group == "waitlist" & time > 10)
+                                  ))
+
+lrt_ssas_nc             <- anova(lmm_ssas_nc_linear, 
+                                 lmm_ssas_nc_quad, 
+                                 lmm_ssas_nc_quad_2, 
+                                 test = "LRT")
+
+
+### Predicted SSAS values
+
+#### Create new data for predictions
+
+pred_df_ssas_nc <- data.frame(
+  group      = c(rep("cbt", 10), rep("waitlist", 10)),
+  treatment  = c(0, rep(1, 9) , rep(0, 10)),
+  time       = c(0:9, 0:9),
+  time_after = c(0, 1:9, rep(0, 10))
+) %>% 
+  mutate(
+    time_sq       = time^2,
+    time_after_sq = time_after^2
+  )
+
+#### Predictions from retained model
+
+predict_df_nc_ssas <- as.data.frame(
+  predict(lmm_ssas_nc_quad, 
+          newdata = pred_df_ssas_nc,
+          re.form = NA, 
+          se.fit  = TRUE)
+)
+
+pred_df_ssas_nc <- bind_cols(pred_df_ssas_nc, predict_df_nc_ssas)
+
+pred_df_ssas_nc <- pred_df_ssas_nc %>% 
+  mutate(
+    ci_lb = fit - se.fit*qnorm(.975),
+    ci_ub = fit + se.fit*qnorm(.975)
+  )
+
+### Visualization of predicted values
+
+plot_ssas_nc_predict <- 
+  ggplot(pred_df_ssas_nc,
+         aes(
+           y     = fit,
+           x     = time,
+           color = group
+         )) +
+  geom_line(
+    linewidth = 1
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_lb,
+      x     = time,
+      color = group
+    )
+  ) +
+  geom_line(
+    linetype = "dashed",
+    aes(
+      y     = ci_ub,
+      x     = time,
+      color = group
+    )
+  ) +
+  scale_y_continuous(
+    breaks = seq(0, 48, 6),
+    limits = c(0, 48)
+  ) +
+  scale_x_continuous(
+    breaks = 0:10
+  ) +
+  scale_color_manual(
+    labels = c("Prevent It", "Waitlist"),
+    values = c(
+      "#ED254E",
+      "#003F91"
+    )
+  ) +
+  labs(
+    x     = "Time (Weeks)",
+    y     = "Predicted SSAS Sum Score",
+    color = "Group"
+  ) +
+  theme_classic()
+
+### Effect size calculation
+
+contrast_ssas_nc   <- predictions(lmm_ssas_nc_quad,
+                               newdata    = pred_df_ssas_nc %>% 
+                                 filter(time == 9),
+                               hypothesis = "pairwise",
+                               re.form    = NA)
+
+contrast_ssas_nc_d <- paste(
+  round(contrast_ssas_nc$estimate / sigma(lmm_ssas_nc_quad), 3),
+  " 95% CI [",
+  round(contrast_ssas_nc$conf.low / sigma(lmm_ssas_nc_quad), 3),
+  ", ",
+  round(contrast_ssas_nc$conf.high / sigma(lmm_ssas_nc_quad), 3),
+  "]",
+  sep = ""
+)
+
+# Pre-Post Comparison Without Crossover (Primary Outcome, SSAS)
+
+# This can be considered a sensitivity analysis that only looks at the data
+# without the waitlist participants who crossed over into the treatment.
+
+lmm_ssas_prepost_main <- lmer(ssas_sumscore 
+                              ~ 1 
+                              + treat_prepost 
+                              + pre_post 
+                              + (1|id), 
+                              data = gpp_data_main %>% 
+                                filter(
+                                  !(assigned_group == "waitlist" & time > 10)
+                                  ))
+
+lmm_ssas_prepost_int  <- lmer(ssas_sumscore 
+                              ~ 1 
+                              + treat_prepost 
+                              * pre_post 
+                              + (1|id), 
+                              data = gpp_data_main %>% 
+                                filter(
+                                  !(assigned_group == "waitlist" & time > 10)
+                                ))
+
+lrt_ssas_prepost      <- anova(lmm_ssas_prepost_main, 
+                               lmm_ssas_prepost_int, 
+                               test = "LRT")
+
+# Reliability analysis ---------------------------------------------------------
+
+ssas_reliability <- omega(ssas_df, fm = "ml")
+
 # Visualization export ---------------------------------------------------------
 
 # Model predictions
@@ -948,4 +1581,166 @@ save_plot("figures/gpp_schimra-a-prediction.png",
           predict_motive_grid,
           base_width = 10, base_height = 8)
 
+# Main figure
+
+predict_main_grid <- plot_grid(plot_ssas_predict,
+                               plot_csam_predict,
+                               plot_copine_predict,
+                               plot_motivewatch_predict,
+                               plot_motivesocial_predict,
+                               plot_motiveinteract_predict,
+                               nrow = 3)
+
+save_plot("figures/gpp_primary-secondary-outcome-prediction.png",
+          predict_main_grid,
+          base_width = 10, base_height = 12)
+
+
+# Model tables -----------------------------------------------------------------
+
+## Basic table function
+
+lmm_table <- function(model, 
+                      dig          = 3,
+                      fixed_names  = c(
+                        "Intercept",
+                        "Treatment start",
+                        "Time (weeks)",
+                        "Time in treatment",
+                        "Time (quadratic)",
+                        "Time in treatment (quadratic)"
+                      ),
+                      random_groups = c(
+                        "Participant",
+                        "Residual"
+                      ),
+                      random_terms  = c(
+                        "Intercept SD",
+                        "SD"
+                      ) ) {
+  
+  # Fixed effects 
+  
+  fixed_effects  <- summary(model)$coefficients
+  
+  colnames(fixed_effects) <- c(
+    "Estimate",
+    "SE",
+    "df",
+    "t statistic",
+    "p-value"
+  )
+  
+  fixed_effects <- fixed_effects %>% 
+    round(dig) %>% 
+    as.data.frame() %>% 
+    mutate(
+      `p-value` = case_when(
+        `p-value` != 0 ~ as.character(`p-value`),
+        `p-value` == 0 ~ "<.001"
+      )
+    )
+  
+  fixed_effects$`p-value` <- str_replace(fixed_effects$`p-value`, "0\\.", "\\.")
+  
+  fixed_effects$Term <- fixed_names
+  
+  fixed_effects <- fixed_effects %>% 
+    relocate(Term, .before = "Estimate")
+  
+  fixed_effects$Effect <- "Fixed"
+  
+  # Random Effects
+  
+  random_effects <- as.data.frame(summary(model)$varcor)
+  
+  colnames(random_effects) <- c(
+    "Groups",
+    "Term",
+    "x",
+    "Variance",
+    "Estimate"
+  )
+  
+  random_effects <- random_effects %>% 
+    select(-x, -Variance)
+  
+  random_effects$Groups <- random_groups
+  
+  random_effects$Term <- random_terms
+  
+  random_effects$Estimate <- round(random_effects$Estimate, dig)
+  
+  random_effects$Effect <- "Random"
+  
+  effects <- bind_rows(fixed_effects, random_effects) %>% 
+    relocate(Groups, .before = "Term")
+  
+  effects %>% 
+    as_grouped_data(groups = "Effect") %>% 
+    flextable() %>% 
+    align(align = c("left",
+                    "left",
+                    "left",
+                    "right",
+                    "right",
+                    "right",
+                    "right",
+                    "right"))
+  
+}
+
+# Results tables
+
+table_watch <- lmm_watch_motive_quad %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)"
+    )
+  ) %>% 
+  autofit()
+
+table_social <- lmm_social_motive_quad %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)"
+    )
+  ) %>% 
+  autofit()
+
+table_interact <- lmm_interact_motive_quad %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)"
+    )
+  ) %>% 
+  autofit()
+
+# Export tables
+
+## Primary and secondary outcomes
+
+if (!dir.exists("output")) {
+  
+  dir.create("output")
+  
+}
+
+save_as_docx("Watch"     = table_watch,
+             "Socialize" = table_social,
+             "Interact"  = table_interact,
+             path  = "output/gpp_posthoc-tables.docx",
+             align = "center")
 

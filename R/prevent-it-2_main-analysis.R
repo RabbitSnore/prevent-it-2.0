@@ -295,7 +295,7 @@ ggplot(pred_df_ssas,
     breaks = 0:10
   ) +
   scale_color_manual(
-    labels = c("CBT", "Waitlist"),
+    labels = c("Prevent It", "Waitlist"),
     values = c(
       "#ED254E",
       "#003F91"
@@ -346,7 +346,6 @@ bootstrap_ssas_d <- paste(
   sep = ""
 )
 
-
 # Sensitivity analyses/Robustness checks
 
 ## Selection model
@@ -370,18 +369,38 @@ bootstrap_ssas_d <- paste(
 # treatment will be missing by design, so they will treated as missing in the
 # variable indicating (planned) missingness.
 
+gpp_heckman_data <- gpp_data_main %>% 
+  filter(
+    complete.cases(lassie_pedophilia_01_baseline,
+                   swch_sumscore_baseline,
+                   raads_14_sumscore_baseline,
+                   cecwc_sumscore_baseline,
+                   phq_sumscore_baseline)
+  )
+
 miss_ssas              <- glmer(ssas_missing 
                                 ~ 1 
                                 + treatment 
                                 + time 
                                 + time_after 
-                                + time_sq
-                                + ADDITIONAL_PREDICTORS 
+                                # + time_sq
+                                + lassie_pedophilia_01_baseline
+                                + cecwc_sumscore_baseline
+                                + swch_sumscore_baseline
+                                + raads_14_sumscore_baseline
+                                + phq_sumscore_baseline
                                 + (1|id), 
-                                data = gpp_data_main, 
-                                family = binomial(link = "probit"))
+                                data = gpp_heckman_data, 
+                                family = binomial(link = "probit"),
+                                control = glmerControl(
+                                  optimizer = "bobyqa",
+                                  optCtrl   = list(
+                                    maxfun = 100000
+                                  )
+                                ))
 
-gpp_data_main$inv_mills <- dnorm( predict(miss_ssas) ) / pnorm( predict(miss_ssas) )
+gpp_heckman_data$inv_mills <- 
+  dnorm( predict(miss_ssas) ) / pnorm( predict(miss_ssas) )
 
 ### Outcome model
 
@@ -392,7 +411,7 @@ lmm_sass_sens_linear      <- lmer(ssas_sumscore
                                   + time_after 
                                   + inv_mills 
                                   + (1|id), 
-                                  data = gpp_data_main)
+                                  data = gpp_heckman_data)
 
 lmm_sass_sens_quad        <- lmer(ssas_sumscore 
                                   ~ 1 
@@ -402,21 +421,10 @@ lmm_sass_sens_quad        <- lmer(ssas_sumscore
                                   + time_sq 
                                   + inv_mills 
                                   + (1|id), 
-                                  data = gpp_data_main)
-
-lmm_sass_sens_quad_2      <- lmer(ssas_sumscore 
-                                  ~ 1 
-                                  + treatment 
-                                  + time 
-                                  + time_after 
-                                  + time_sq 
-                                  + inv_mills 
-                                  + (1|id), 
-                                  data = gpp_data_main)
+                                  data = gpp_heckman_data)
 
 lrt_sass_sens             <- anova(lmm_sass_sens_linear, 
                                    lmm_sass_sens_quad, 
-                                   lmm_sass_sens_quad_2, 
                                    test = "LRT")
 
 # Random slopes model
@@ -427,7 +435,6 @@ lmm_ssas_quad_rs        <- lmer(ssas_sumscore
                                 + time 
                                 + time_after 
                                 + time_sq 
-                                + time_after_sq 
                                 + (1 + time + time_after|id), 
                                 control = lmerControl(
                                   optimizer = "bobyqa"
@@ -464,7 +471,7 @@ lmm_ssas_quad_rs        <- lmer(ssas_sumscore
 
 #### CSAM
 
-##### Hours (daily average) -- Active user subgroup
+##### Hours (weekly average) -- Active user subgroup
 
 lmm_csam_hours_linear      <- lmer(schimra_b_csam_hours_avg 
                                    ~ 1
@@ -498,7 +505,7 @@ lrt_csam_hours             <- anova(lmm_csam_hours_linear,
                                     lmm_csam_hours_quad_2, 
                                     test = "LRT")
 
-###### Visualization of daily average CSAM use
+###### Visualization of weekly average CSAM use
 
 csam_time_arm <- gpp_data_active_csam %>% 
   group_by(assigned_group, time) %>% 
@@ -533,7 +540,7 @@ ggplot(csam_time_arm,
   ) +
   labs(
     x = "Time",
-    y = "Daily Average CSAM Use",
+    y = "Weekly Average CSAM Use",
     color = "Group"
   ) +
   theme_classic()
@@ -612,12 +619,12 @@ ggplot(pred_df_csam,
   ) +
   labs(
     x     = "Time (Weeks)",
-    y     = "Predicted Daily Average CSAM Use (Hours)",
+    y     = "Predicted Weekly Average CSAM Use (Hours)",
     color = "Group"
   ) +
   theme_classic()
 
-##### Hours (daily average) -- All participants
+##### Hours (weekly average) -- All participants
 
 lmm_csam_hours_all_linear  <- lmer(schimra_b_csam_hours_avg 
                                    ~ 1
@@ -685,7 +692,7 @@ plot_csam_time_all <-
   ) +
   labs(
     x = "Time",
-    y = "Daily Average CSAM Use",
+    y = "Weekly Average CSAM Use",
     color = "Group"
   ) +
   theme_classic()
@@ -751,14 +758,14 @@ ggplot(pred_df_csam_all,
     )
   ) +
   scale_y_continuous(
-    breaks = seq(0, 1.0, .25),
-    limits = c(-.25, 1.0)
+    breaks = seq(0, 8.0, 1),
+    limits = c(0, 8.0)
   ) +
   scale_x_continuous(
     breaks = 0:9
   ) +
   scale_color_manual(
-    labels = c("CBT", "Waitlist"),
+    labels = c("Prevent It", "Waitlist"),
     values = c(
       "#ED254E",
       "#003F91"
@@ -770,7 +777,7 @@ ggplot(pred_df_csam_all,
   ) +
   labs(
     x     = "Time (Weeks)",
-    y     = "Predicted Daily Average CSAM Use (Hours)",
+    y     = "Predicted Weekly Hours Observing Children",
     color = "Group"
   ) +
   theme_classic()
@@ -891,7 +898,7 @@ plot_copine_predict <-
     breaks = 0:9
   ) +
   scale_color_manual(
-    labels = c("CBT", "Waitlist"),
+    labels = c("Prevent It", "Waitlist"),
     values = c(
       "#ED254E",
       "#003F91"
@@ -1021,7 +1028,7 @@ plot_age_predict <-
     breaks = 0:9
   ) +
   scale_color_manual(
-    labels = c("CBT", "Waitlist"),
+    labels = c("Prevent It", "Waitlist"),
     values = c(
       "#ED254E",
       "#003F91"
@@ -1269,7 +1276,7 @@ lrt_other_age           <- anova(lmm_other_age_linear,
 predict_grid <- plot_grid(plot_ssas_predict,
                           plot_csam_predict,
                           plot_copine_predict,
-                          plot_age_predict,
+                          # plot_age_predict,
                           nrow = 2)
 
 save_plot("figures/gpp_primary-outcome-prediction.png",
@@ -1418,7 +1425,24 @@ table_age <- lmm_csam_age_quad %>%
     )
   ) %>% 
   autofit()
-  
+
+table_missing <- miss_ssas %>% 
+  as_flextable() %>% 
+  autofit()
+
+table_heckman <- lmm_sass_sens_quad %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)",
+      "Inverse Mills Ratio"
+    )
+  ) %>% 
+  autofit()
+
 # Export tables
 
 ## Primary and secondary outcomes
@@ -1434,4 +1458,11 @@ save_as_docx("SSAS"                  = table_ssas,
              "COPINE Severity"       = table_copine,
              "Age of Youngest Child" = table_age,
              path  = "output/gpp_main-tables.docx",
+             align = "center")
+
+# Sensitivity analysis
+
+save_as_docx("Missingness Model"       = table_missing,
+             "Heckman Selection Model" = table_heckman,
+             path  = "output/gpp_sensitivity-table.docx",
              align = "center")
