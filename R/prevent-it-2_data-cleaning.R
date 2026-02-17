@@ -3634,7 +3634,8 @@ predictor_df <- raw_bound %>%
     swch_sumscore,
     raads_14_sumscore,
     phq_sumscore,
-    ssas_sumscore
+    ssas_sumscore,
+    hbi_19_sumscore
   ) %>% 
   filter(time == 0) %>% 
   group_by(study_code) %>% 
@@ -3644,7 +3645,8 @@ predictor_df <- raw_bound %>%
     swch_sumscore_baseline        = mean(swch_sumscore, na.rm = TRUE),
     raads_14_sumscore_baseline    = mean(raads_14_sumscore, na.rm = TRUE), 
     phq_sumscore_baseline         = mean(phq_sumscore, na.rm = TRUE),
-    ssas_sumscore_baseline        = mean(ssas_sumscore, na.rm = TRUE)
+    ssas_sumscore_baseline        = mean(ssas_sumscore, na.rm = TRUE),
+    hbi_sumscore_baseline         = mean(hbi_19_sumscore, na.rm = TRUE)
   ) %>% 
   ungroup()
 

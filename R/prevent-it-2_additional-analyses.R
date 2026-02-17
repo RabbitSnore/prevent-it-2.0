@@ -1563,6 +1563,88 @@ lrt_ssas_prepost      <- anova(lmm_ssas_prepost_main,
                                lmm_ssas_prepost_int, 
                                test = "LRT")
 
+# Sensitivity analysis (HBI-19 baseline)
+
+lmm_ssas_quad_hbi        <- lmer(ssas_sumscore 
+                                 ~ 1 
+                                 + treatment 
+                                 + time 
+                                 + time_after 
+                                 + time_sq
+                                 + scale(hbi_sumscore_baseline, scale = FALSE)
+                                 + (1|id), 
+                                 data = gpp_data_main)
+
+lmm_ssas_rs_hbi          <- lmer(ssas_sumscore 
+                                 ~ 1 
+                                 + treatment 
+                                 + time 
+                                 + time_after 
+                                 + time_sq
+                                 + scale(hbi_sumscore_baseline, scale = FALSE)
+                                 + (1 + time + time_after|id), 
+                                 control = lmerControl(
+                                   optimizer = "bobyqa"
+                                 ), 
+                                 data = gpp_data_main)
+
+# Sensitivity analysis (assigned group)
+
+# This analysis controls for which group the participants were assigned to,
+# which in effect helps account for baseline differences in SSAS score.
+
+gpp_data_main$assigned_group <- factor(gpp_data_main$assigned_group,
+                                       levels = c("waitlist", "cbt"))
+
+lmm_ssas_quad_arm        <- lmer(ssas_sumscore 
+                                 ~ 1 
+                                 + treatment 
+                                 + time 
+                                 + time_after 
+                                 + time_sq
+                                 + assigned_group
+                                 + (1|id), 
+                                 data = gpp_data_main)
+
+lmm_ssas_rs_arm          <- lmer(ssas_sumscore 
+                                 ~ 1 
+                                 + treatment 
+                                 + time 
+                                 + time_after 
+                                 + time_sq
+                                 + assigned_group
+                                 + (1 + time + time_after|id), 
+                                 control = lmerControl(
+                                   optimizer = "bobyqa"
+                                 ), 
+                                 data = gpp_data_main)
+
+## Interaction between assigned group and treatment effect over time
+
+lmm_ssas_int_arm         <- lmer(ssas_sumscore 
+                                 ~ 1 
+                                 + treatment 
+                                 + time 
+                                 + time_after
+                                 * assigned_group
+                                 + time_sq
+                                 + (1|id), 
+                                 data = gpp_data_main)
+
+lmm_ssas_int_rs_arm      <- lmer(ssas_sumscore 
+                                 ~ 1 
+                                 + treatment 
+                                 + time 
+                                 + time_after
+                                 * assigned_group
+                                 + time_sq
+                                 + (1 + time + time_after|id), 
+                                 control = lmerControl(
+                                   optimizer = "bobyqa"
+                                 ), 
+                                 data = gpp_data_main)
+
+
 # Reliability analysis ---------------------------------------------------------
 
 ssas_reliability <- omega(ssas_df, fm = "ml")
@@ -1728,6 +1810,48 @@ table_interact <- lmm_interact_motive_quad %>%
   ) %>% 
   autofit()
 
+## Sensitivity analyses
+
+table_sens_hbi <- lmm_ssas_quad_hbi %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)",
+      "Baseline HBI-19 score"
+    )
+  ) %>% 
+  autofit()
+
+table_sens_arm <- lmm_ssas_quad_arm %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)",
+      "Assigned Group (CBT)"
+    )
+  ) %>% 
+  autofit()
+
+table_sens_int_arm <- lmm_ssas_int_arm %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Assigned Group (CBT)",
+      "Time (quadratic)",
+      "Time in treatment x Group"
+    )
+  ) %>% 
+  autofit()
+
 # Export tables
 
 ## Primary and secondary outcomes
@@ -1742,5 +1866,11 @@ save_as_docx("Watch"     = table_watch,
              "Socialize" = table_social,
              "Interact"  = table_interact,
              path  = "output/gpp_posthoc-tables.docx",
+             align = "center")
+
+save_as_docx("Baseline HBI-19"             = table_sens_hbi,
+             "Assigned Group"              = table_sens_arm,
+             "Treatment x Assigned Group"  = table_sens_int_arm,
+             path  = "output/gpp_baseline-difference-tables.docx",
              align = "center")
 

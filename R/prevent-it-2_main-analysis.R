@@ -1443,6 +1443,81 @@ table_heckman <- lmm_sass_sens_quad %>%
   ) %>% 
   autofit()
 
+# Additional outcomes
+
+# Socializing
+
+table_social_hours <- lmm_social_hours_quad %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)"
+    )
+  ) %>% 
+  autofit()
+
+table_social_age <- lmm_social_age_linear %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment"
+    )
+  ) %>% 
+  autofit()
+
+# Interacting
+
+table_interact_hours <- lmm_interact_hours_linear %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment"
+    )
+  ) %>% 
+  autofit()
+
+table_interact_age <- lmm_interact_age_linear %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment"
+    )
+  ) %>% 
+  autofit()
+
+# Other Behaviors
+
+table_other_hours <- lmm_other_hours_linear %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment"
+    )
+  ) %>% 
+  autofit()
+
+table_other_age <- lmm_other_age_linear %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment"
+    )
+  ) %>% 
+  autofit()
+
 # Export tables
 
 ## Primary and secondary outcomes
@@ -1466,3 +1541,15 @@ save_as_docx("Missingness Model"       = table_missing,
              "Heckman Selection Model" = table_heckman,
              path  = "output/gpp_sensitivity-table.docx",
              align = "center")
+
+# Additional outcomes
+
+save_as_docx("Socializing - Hours"        = table_social_hours,
+             "Socializing - Youngest Age" = table_social_age,
+             "Interacting - Hours"        = table_interact_hours,
+             "Interacting - Youngest Age" = table_interact_age,
+             "Other - Hours"              = table_other_hours,
+             "Other - Youngest Age"       = table_other_age,
+             path  = "output/gpp_additional-outcome-tables.docx",
+             align = "center")
+
