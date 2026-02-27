@@ -1644,6 +1644,25 @@ lmm_ssas_int_rs_arm      <- lmer(ssas_sumscore
                                  ), 
                                  data = gpp_data_main)
 
+# Sensitivity analysis: Removing non-4s on truthfulness item
+
+truthful_df <- gpp_data_main %>%
+  group_by(id) %>% 
+  filter(timepoint == "pre_2" | timepoint == "post") %>% 
+  summarise(
+    full_honesty = mean(truthfulness_honest) == 4
+  ) %>% 
+  filter(full_honesty)
+
+lmm_ssas_truth           <- lmer(ssas_sumscore 
+                                 ~ 1 
+                                 + treatment 
+                                 + time 
+                                 + time_after
+                                 + time_sq
+                                 + (1|id), 
+                                 data = gpp_data_main %>% 
+                                   filter(id %in% truthful_df$id))
 
 # Reliability analysis ---------------------------------------------------------
 
@@ -1852,6 +1871,18 @@ table_sens_int_arm <- lmm_ssas_int_arm %>%
   ) %>% 
   autofit()
 
+table_sens_truth <- lmm_ssas_truth %>% 
+  lmm_table(
+    fixed_names = c(
+      "Intercept",
+      "Treatment start",
+      "Time (weeks)",
+      "Time in treatment",
+      "Time (quadratic)"
+    )
+  ) %>% 
+  autofit()
+
 # Export tables
 
 ## Primary and secondary outcomes
@@ -1874,3 +1905,6 @@ save_as_docx("Baseline HBI-19"             = table_sens_hbi,
              path  = "output/gpp_baseline-difference-tables.docx",
              align = "center")
 
+save_as_docx("Only Fully Honest at Pre and Post" = table_sens_truth,
+             path  = "output/gpp_truthful-table.docx",
+             align = "center")
